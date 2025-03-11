@@ -61,13 +61,13 @@ def generate_llama2_response(prompt_input):
             string_dialogue += "Assistant: " + dict_message["content"] + "\n\n"
     # output = replicate.run(llm, 
     #                        input={"prompt": f"{string_dialogue} {prompt_input} Assistant: ",
-    #                               "temperature":temperature, "top_p":top_p, "max_length":max_length, "repetition_penalty":1})
+                                  "temperature":temperature, "top_p":top_p, "max_length":max_length, "repetition_penalty":1})
     
 
     # replicate llama-3 call
     response = completion(
         model="replicate/meta/meta-llama-3-8b-instruct", 
-        messages = [{ "content": "Hello, how are you?","role": "user"}],
+        messages = [{ "content":prompt_input ,"role": "user"}],
         stream=True
     )
     return response
