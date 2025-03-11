@@ -1,7 +1,7 @@
 import streamlit as st
 import replicate
 import os
-
+from openai import OpenAI
 # App title
 st.set_page_config(page_title="🦙💬 Llama 2 Chatbot")
 
@@ -48,6 +48,22 @@ def clear_chat_history():
     st.session_state.messages = [{"role": "assistant", "content": "How may I assist you today?"}]
 st.sidebar.button('Clear Chat History', on_click=clear_chat_history)
 
+
+
+client = OpenAI()
+os.environ['OPENAI_API_KEY'] = replicate_api
+completion = client.chat.completions.create(
+    model="gpt-4o",
+    messages=[
+        {"role": "developer", "content": "Talk like a pirate."},
+        {
+            "role": "user",
+            "content": "How do I check if a Python object is an instance of a class?",
+        },
+    ],
+)
+
+print(completion.choices[0].message.content)
 # Function for generating LLaMA2 response
 def generate_llama2_response(prompt_input):
     string_dialogue = "You are a helpful assistant. You do not respond as 'User' or pretend to be 'User'. You only respond once as 'Assistant'."
@@ -56,9 +72,10 @@ def generate_llama2_response(prompt_input):
             string_dialogue += "User: " + dict_message["content"] + "\n\n"
         else:
             string_dialogue += "Assistant: " + dict_message["content"] + "\n\n"
-    output = replicate.run(llm, 
-                           input={"prompt": f"{string_dialogue} {prompt_input} Assistant: ",
-                                  "temperature":temperature, "top_p":top_p, "max_length":max_length, "repetition_penalty":1})
+    # output = replicate.run(llm, 
+    #                        input={"prompt": f"{string_dialogue} {prompt_input} Assistant: ",
+    #                               "temperature":temperature, "top_p":top_p, "max_length":max_length, "repetition_penalty":1})
+    output = completion.choices[0].message.content
     return output
 
 # User-provided prompt
