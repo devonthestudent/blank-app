@@ -49,9 +49,8 @@ def clear_chat_history():
 st.sidebar.button('Clear Chat History', on_click=clear_chat_history)
 
 
-
-client = OpenAI()
 os.environ['OPENAI_API_KEY'] = replicate_api
+client = OpenAI()
 completion = client.chat.completions.create(
     model="gpt-4o",
     messages=[
