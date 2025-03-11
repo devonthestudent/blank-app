@@ -22,13 +22,13 @@ with st.sidebar:
 
     # Refactored from https://github.com/a16z-infra/llama2-chatbot
     st.subheader('Models and parameters')
-    selected_model = st.sidebar.selectbox('Choose a Llama2 model', ['qwen-32b', 'Llama2-13B', 'Llama2-70B'], key='selected_model')
+    selected_model = st.sidebar.selectbox('Choose a Llama2 model', ['qwen-v3', 'Llama3-70B','deepseek-r1'], key='selected_model')
     if selected_model == 'qwen-32b':
-        llm = 'lucataco/qwen1.5-7b:f85bec5b21ba0860e0f200be6ef5af9d5a65b974b9f99e36eb036d21eab884de'
+        llm = ''
     elif selected_model == 'Llama2-13B':
         llm = 'a16z-infra/llama13b-v2-chat:df7690f1994d94e96ad9d568eac121aecf50684a0b0963b25a41cc40061269e5'
     else:
-        llm = 'replicate/llama70b-v2-chat:e951f18578850b652510200860fc4ea62b3b16fac280f83ff32282f87bbd2e48'
+        llm = 'replicate/deepseek-ai/deepseek-r1'
     
     temperature = st.sidebar.slider('temperature', min_value=0.01, max_value=5.0, value=0.1, step=0.01)
     top_p = st.sidebar.slider('top_p', min_value=0.01, max_value=1.0, value=0.9, step=0.01)
@@ -66,7 +66,7 @@ def generate_llama2_response(prompt_input):
 
     # replicate llama-3 call
     response = completion(
-        model="replicate/deepseek-ai/deepseek-r1", 
+        model= llm, 
         
         messages = [{ "content":prompt_input ,"role": "user"}],
         stream=True
