@@ -66,7 +66,8 @@ def generate_llama2_response(prompt_input):
 
     # replicate llama-3 call
     response = completion(
-        model="replicate/meta/meta-llama-3-8b-instruct", 
+        model="replicate/deepseek-ai/deepseek-r1", 
+        
         messages = [{ "content":prompt_input ,"role": "user"}],
         stream=True
     )
