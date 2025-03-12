@@ -119,7 +119,7 @@ with st.sidebar:
             replicate_key = st.text_input("Enter Replicate API Key", type="password")
             if replicate_key:
                 if replicate_key.startswith('r8_') and len(replicate_key) == 40:
-                          st.session_state.REPLICATE_API_KEY = replicate_key
+                        st.session_state.REPLICATE_API_KEY = replicate_key
                     os.environ["REPLICATE_API_KEY"] = replicate_key
                     st.success('Replicate API key successfully loaded!', icon='✨')
                 else:
