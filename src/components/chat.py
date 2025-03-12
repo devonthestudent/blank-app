@@ -67,7 +67,7 @@ class ChatInterface:
                 thinking_buffer = ""
                 displayed_response = ""
                 thinking_phase = ""
-                is_thinking = True
+                is_thinking = False  # Default to not thinking unless we see <think>
                 end_tag_buffer = ""
                 has_received_content = False
                 
@@ -93,20 +93,18 @@ class ChatInterface:
                             has_received_content = True
                             full_response += content
                             
-                            # Check for end of thinking phase
+                            # Check if we're entering thinking phase
+                            if "<think>" in content and not is_thinking:
+                                is_thinking = True
+                                thinking_buffer = ""
+                                continue
+                            
+                            # If we're in thinking phase
                             if is_thinking:
-                                end_tag_buffer += content
-                                if len(end_tag_buffer) > 8:  # Keep only last 8 characters
-                                    end_tag_buffer = end_tag_buffer[-8:]
-                                
-                                if "</think>" in full_response and is_thinking:
-                                    thinking_phase, remaining = self._extract_thinking_phase(full_response)
-                                    full_response = remaining
-                                    displayed_response = remaining  # Initialize displayed_response with remaining content
+                                if "</think>" in content:
                                     is_thinking = False
-                                    
-                                    # Display final thinking phase in styled container
-                                    if thinking_phase.strip():  # Only show if there's actual content
+                                    thinking_phase = thinking_buffer.strip()
+                                    if thinking_phase:
                                         thinking_container.markdown(f"""
                                         <div style='background-color: #f0f2f6; padding: 1rem; border-radius: 0.5rem; margin: 0.5rem 0;'>
                                             <div style='color: #666; font-style: italic;'>
@@ -114,17 +112,10 @@ class ChatInterface:
                                             </div>
                                         </div>
                                         """, unsafe_allow_html=True)
-                                    
-                                    # Update token count for thinking phase
-                                    st.session_state.thinking_tokens = len(thinking_phase.split())
+                                        st.session_state.thinking_tokens = len(thinking_phase.split())
                                 else:
-                                    # Only display content up to potential partial </think> tag
-                                    safe_content = content
-                                    if "</th" in end_tag_buffer or "think>" in end_tag_buffer:
-                                        safe_content = ""
-                                    thinking_buffer += safe_content
-                                    
-                                    if thinking_buffer.strip():  # Only show if there's actual content
+                                    thinking_buffer += content
+                                    if thinking_buffer.strip():
                                         with thinking_container:
                                             with st.spinner("Thinking..."):
                                                 st.markdown(f"""
@@ -135,13 +126,14 @@ class ChatInterface:
                                                 </div>
                                                 """, unsafe_allow_html=True)
                             else:
-                                displayed_response += content
-                                # Create a placeholder div for the streaming response
-                                response_container.markdown(
-                                    f"""<div style='white-space: pre-wrap;'>{displayed_response}<span class='blinking'>▌</span></div>""", 
-                                    unsafe_allow_html=True
-                                )
-                                st.session_state.response_tokens = len(displayed_response.split())
+                                # Only add to displayed response if we're not in thinking phase
+                                if not any(tag in content for tag in ["<think>", "</think>"]):
+                                    displayed_response += content
+                                    response_container.markdown(
+                                        f"""<div style='white-space: pre-wrap;'>{displayed_response}<span class='blinking'>▌</span></div>""", 
+                                        unsafe_allow_html=True
+                                    )
+                                    st.session_state.response_tokens = len(displayed_response.split())
                             
                             # Update elapsed time and token counts
                             elapsed_time = time.time() - start_time
@@ -158,10 +150,13 @@ class ChatInterface:
                             # Display final response without cursor
                             response_container.markdown(final_response)
                             # Add to memory
-                            self.memory_manager.add_message("assistant", f"""
-                            <think>{thinking_phase}</think>
-                            {final_response}
-                            """.strip())
+                            if thinking_phase:
+                                self.memory_manager.add_message("assistant", f"""
+                                <think>{thinking_phase}</think>
+                                {final_response}
+                                """.strip())
+                            else:
+                                self.memory_manager.add_message("assistant", final_response.strip())
                         else:
                             error_container.warning("Response was empty after processing.")
                     else:
