@@ -7,7 +7,7 @@ from src.components.memory import MemoryManager
 
 # Page configuration
 st.set_page_config(
-    page_title="AI Chat Interface",
+    page_title="John Smith AI Chat",
     page_icon="🤖",
     layout="wide",
     initial_sidebar_state="expanded"
@@ -15,9 +15,18 @@ st.set_page_config(
 
 # Initialize session state for API keys if not exists
 if 'GROQ_API_KEY' not in st.session_state:
-    st.session_state.GROQ_API_KEY = None
+    # Try to get the key from secrets first
+    try:
+        st.session_state.GROQ_API_KEY = st.secrets["GROQ_API_KEY"]
+        os.environ["GROQ_API_KEY"] = st.session_state.GROQ_API_KEY
+    except:
+        st.session_state.GROQ_API_KEY = None
+
 if 'REPLICATE_API_KEY' not in st.session_state:
     st.session_state.REPLICATE_API_KEY = None
+
+if 'use_custom_groq_key' not in st.session_state:
+    st.session_state.use_custom_groq_key = False
 
 # Sidebar
 with st.sidebar:
@@ -35,14 +44,31 @@ with st.sidebar:
     st.subheader("API Key Configuration")
     
     if api_provider == "Free (Groq)":
-        if st.session_state.GROQ_API_KEY:
-            st.success('Groq API key already provided!', icon='✅')
+        # Add toggle for custom Groq API key
+        st.session_state.use_custom_groq_key = st.checkbox(
+            "Use custom Groq API key",
+            value=st.session_state.use_custom_groq_key,
+            help="Check this box if you want to use your own Groq API key instead of the default one"
+        )
+
+        if st.session_state.use_custom_groq_key:
+            if st.session_state.GROQ_API_KEY and st.session_state.GROQ_API_KEY != st.secrets.get("GROQ_API_KEY", ""):
+                st.success('Custom Groq API key already provided!', icon='✅')
+            else:
+                groq_key = st.text_input("Enter your Groq API Key", type="password")
+                if groq_key:
+                    st.session_state.GROQ_API_KEY = groq_key
+                    os.environ["GROQ_API_KEY"] = groq_key
+                    st.success('Custom Groq API key successfully loaded!', icon='✅')
         else:
-            groq_key = st.text_input("Enter Groq API Key", type="password")
-            if groq_key:
-                st.session_state.GROQ_API_KEY = groq_key
-                os.environ["GROQ_API_KEY"] = groq_key
-                st.success('Groq API key successfully loaded!', icon='✅')
+            if st.secrets.get("GROQ_API_KEY"):
+                st.success('Using default Groq API key', icon='✅')
+                st.session_state.GROQ_API_KEY = st.secrets["GROQ_API_KEY"]
+                os.environ["GROQ_API_KEY"] = st.session_state.GROQ_API_KEY
+            else:
+                st.error('Default Groq API key not found in secrets!', icon='⚠️')
+                st.session_state.GROQ_API_KEY = None
+
     else:  # Premium (Replicate)
         if st.session_state.REPLICATE_API_KEY:
             st.success('Replicate API key already provided!', icon='✅')
@@ -79,20 +105,20 @@ with st.sidebar:
 
 # Main chat interface
 if "model_config" in st.session_state:
-    st.title("Chat with AI")
+    st.title("Chat with John Smith")
     
     # Initialize and render chat interface
     chat_interface = ChatInterface(st.session_state["model_config"]["model_name"])
     chat_interface.render()
 else:
-    st.title("Welcome to AI Chat Interface")
+    st.title("Welcome to John Smith AI")
     st.info("Please configure your API key and select a model in the sidebar to start chatting.", icon="👈")
 
 # Footer
 st.markdown("---")
 st.markdown("""
     <div style='text-align: center'>
-        <p>Built with ❤️ using Streamlit and LiteLLM</p>
+        <p>Built with ❤️ using LiteLLM by D the student</p>
         <p>Supporting Groq and Replicate models</p>
     </div>
 """, unsafe_allow_html=True)
