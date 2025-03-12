@@ -69,6 +69,7 @@ class ChatInterface:
                 thinking_phase = ""
                 is_thinking = True
                 end_tag_buffer = ""
+                has_received_content = False
                 
                 # Get model configuration from session state
                 model_config = st.session_state.get("model_config", {})
@@ -89,6 +90,7 @@ class ChatInterface:
                     ):
                         if chunk and hasattr(chunk, 'choices') and chunk.choices and hasattr(chunk.choices[0], 'delta') and chunk.choices[0].delta.content:
                             content = chunk.choices[0].delta.content
+                            has_received_content = True
                             full_response += content
                             
                             # Check for end of thinking phase
@@ -100,17 +102,18 @@ class ChatInterface:
                                 if "</think>" in full_response and is_thinking:
                                     thinking_phase, remaining = self._extract_thinking_phase(full_response)
                                     full_response = remaining
-                                    displayed_response = ""
+                                    displayed_response = remaining  # Initialize displayed_response with remaining content
                                     is_thinking = False
                                     
                                     # Display final thinking phase in styled container
-                                    thinking_container.markdown(f"""
-                                    <div style='background-color: #f0f2f6; padding: 1rem; border-radius: 0.5rem; margin: 0.5rem 0;'>
-                                        <div style='color: #666; font-style: italic;'>
-                                            "{thinking_phase}"
+                                    if thinking_phase.strip():  # Only show if there's actual content
+                                        thinking_container.markdown(f"""
+                                        <div style='background-color: #f0f2f6; padding: 1rem; border-radius: 0.5rem; margin: 0.5rem 0;'>
+                                            <div style='color: #666; font-style: italic;'>
+                                                "{thinking_phase}"
+                                            </div>
                                         </div>
-                                    </div>
-                                    """, unsafe_allow_html=True)
+                                        """, unsafe_allow_html=True)
                                     
                                     # Update token count for thinking phase
                                     st.session_state.thinking_tokens = len(thinking_phase.split())
@@ -121,18 +124,20 @@ class ChatInterface:
                                         safe_content = ""
                                     thinking_buffer += safe_content
                                     
-                                    with thinking_container:
-                                        with st.spinner("Thinking..."):
-                                            st.markdown(f"""
-                                            <div style='background-color: #f0f2f6; padding: 1rem; border-radius: 0.5rem; margin: 0.5rem 0;'>
-                                                <div style='color: #666; font-style: italic;'>
-                                                    "{thinking_buffer}"
+                                    if thinking_buffer.strip():  # Only show if there's actual content
+                                        with thinking_container:
+                                            with st.spinner("Thinking..."):
+                                                st.markdown(f"""
+                                                <div style='background-color: #f0f2f6; padding: 1rem; border-radius: 0.5rem; margin: 0.5rem 0;'>
+                                                    <div style='color: #666; font-style: italic;'>
+                                                        "{thinking_buffer}"
+                                                    </div>
                                                 </div>
-                                            </div>
-                                            """, unsafe_allow_html=True)
+                                                """, unsafe_allow_html=True)
                             else:
                                 displayed_response += content
-                                response_container.markdown(displayed_response + "▌")
+                                if displayed_response.strip():  # Only update if there's actual content
+                                    response_container.markdown(displayed_response + "▌")
                                 st.session_state.response_tokens = len(displayed_response.split())
                             
                             # Update elapsed time and token counts
@@ -144,21 +149,18 @@ class ChatInterface:
                             )
                     
                     # Final update
-                    if thinking_phase:
-                        response_container.markdown(displayed_response)
-                    else:
-                        # If no thinking phase was detected, treat everything as response
-                        response_container.markdown(displayed_response)
-                        st.session_state.response_tokens = len(displayed_response.split())
-                        st.session_state.thinking_tokens = 0
-                    
-                    if not displayed_response.strip():
+                    if not has_received_content:
                         error_container.warning("No response generated. The model might be experiencing issues.")
-                    
-                    self.memory_manager.add_message("assistant", f"""
-                    <think>{thinking_phase}</think>
-                    {displayed_response}
-                    """.strip())
+                    else:
+                        if displayed_response.strip():
+                            response_container.markdown(displayed_response)
+                            # Add message to memory only if we have actual content
+                            self.memory_manager.add_message("assistant", f"""
+                            <think>{thinking_phase}</think>
+                            {displayed_response}
+                            """.strip())
+                        else:
+                            error_container.warning("Response was empty. The model might be experiencing issues.")
 
                 except Exception as e:
                     error_msg = f"Error during response generation: {str(e)}"
