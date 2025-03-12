@@ -4,35 +4,44 @@ from ..config.models_config import SUPPORTED_MODELS
 
 class ModelSelector:
     def __init__(self):
-        self.providers = list(SUPPORTED_MODELS.keys())
-        self.models_by_provider = {
-            provider: {
+        self.companies = list(SUPPORTED_MODELS.keys())
+        self.models_by_company = {
+            company: {
                 model_id: config["name"]
                 for model_id, config in models.items()
             }
-            for provider, models in SUPPORTED_MODELS.items()
+            for company, models in SUPPORTED_MODELS.items()
         }
 
     def render(self) -> Dict[str, Any]:
         """Render the model selection interface and return the selected model configuration."""
         st.sidebar.subheader("Model Selection")
         
-        # Provider selection
-        selected_provider = st.sidebar.selectbox(
-            "Select Provider",
-            self.providers,
-            format_func=lambda x: x.capitalize()
+        # Company selection
+        selected_company = st.sidebar.selectbox(
+            "Select Company",
+            self.companies,
+            format_func=lambda x: x.capitalize(),
+            help="Select the AI company whose models you want to use"
         )
 
-        # Model selection based on provider
+        # Model selection based on company
         selected_model_id = st.sidebar.selectbox(
             "Select Model",
-            list(self.models_by_provider[selected_provider].keys()),
-            format_func=lambda x: self.models_by_provider[selected_provider][x]
+            list(self.models_by_company[selected_company].keys()),
+            format_func=lambda x: self.models_by_company[selected_company][x],
+            help=f"Select a specific model from {selected_company.capitalize()}"
         )
 
         # Get model configuration
-        model_config = SUPPORTED_MODELS[selected_provider][selected_model_id]
+        model_config = SUPPORTED_MODELS[selected_company][selected_model_id]
+
+        # Display model information
+        st.sidebar.markdown(f"""
+        **Model Info:**
+        - Context Length: {model_config['context_length']:,} tokens
+        - Provider: {model_config['provider'].capitalize()}
+        """)
 
         # Model parameters
         st.sidebar.subheader("Model Parameters")
@@ -64,9 +73,16 @@ class ModelSelector:
             help="Optional system prompt to guide the model's behavior. Leave empty to use default."
         )
 
+        # Add a note about preview models
+        if model_config["provider"] == "groq":
+            st.sidebar.warning(
+                "Note: These are preview models intended for evaluation purposes only. "
+                "They may be discontinued at short notice."
+            )
+
         return {
             "model_name": selected_model_id,
-            "provider": selected_provider,
+            "provider": model_config["provider"],
             "temperature": temperature,
             "max_tokens": max_tokens,
             "system_prompt": system_prompt if system_prompt else None,

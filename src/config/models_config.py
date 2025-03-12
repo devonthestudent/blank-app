@@ -2,53 +2,115 @@ from typing import Dict, Any
 
 # Supported models configuration
 SUPPORTED_MODELS = {
-    "groq": {
-        "llama3-8b-8192": {
-            "name": "Llama 3 8B",
+    "alibaba": {
+        "qwen-qwq-32b": {
+            "name": "Qwen QWQ 32B",
+            "provider": "groq",
+            "context_length": 128000,
+            "is_instruction": True,
+            "default_temperature": 0.7,
+            "default_max_tokens": 2048,
+        },
+        "qwen-2.5-coder-32b": {
+            "name": "Qwen 2.5 Coder 32B",
+            "provider": "groq",
+            "context_length": 128000,
+            "is_instruction": True,
+            "default_temperature": 0.7,
+            "default_max_tokens": 2048,
+        },
+        "qwen-2.5-32b": {
+            "name": "Qwen 2.5 32B",
+            "provider": "groq",
+            "context_length": 128000,
+            "is_instruction": True,
+            "default_temperature": 0.7,
+            "default_max_tokens": 2048,
+        }
+    },
+    "mistral": {
+        "mistral-saba-24b": {
+            "name": "Mistral Saba 24B",
+            "provider": "groq",
+            "context_length": 32000,
+            "is_instruction": True,
+            "default_temperature": 0.7,
+            "default_max_tokens": 2048,
+        }
+    },
+    "deepseek": {
+        "deepseek-r1-distill-qwen-32b": {
+            "name": "DeepSeek R1 Distill Qwen 32B",
+            "provider": "groq",
+            "context_length": 128000,
+            "is_instruction": True,
+            "default_temperature": 0.7,
+            "default_max_tokens": 16384,
+        },
+        "deepseek-r1-distill-llama-70b-specdec": {
+            "name": "DeepSeek R1 Distill LLaMA 70B SpecDec",
+            "provider": "groq",
+            "context_length": 128000,
+            "is_instruction": True,
+            "default_temperature": 0.7,
+            "default_max_tokens": 16384,
+        },
+        "deepseek-r1-distill-llama-70b": {
+            "name": "DeepSeek R1 Distill LLaMA 70B",
+            "provider": "groq",
+            "context_length": 128000,
+            "is_instruction": True,
+            "default_temperature": 0.7,
+            "default_max_tokens": 2048,
+        }
+    },
+    "meta": {
+        "llama-3.3-70b-specdec": {
+            "name": "LLaMA 3.3 70B SpecDec",
             "provider": "groq",
             "context_length": 8192,
             "is_instruction": True,
             "default_temperature": 0.7,
             "default_max_tokens": 2048,
         },
-        "mixtral-8x7b-32768": {
-            "name": "Mixtral 8x7B",
+        "llama-3.2-1b-preview": {
+            "name": "LLaMA 3.2 1B Preview",
             "provider": "groq",
-            "context_length": 32768,
+            "context_length": 128000,
             "is_instruction": True,
             "default_temperature": 0.7,
-            "default_max_tokens": 2048,
+            "default_max_tokens": 8192,
         },
-        "llama2-70b-4096": {
-            "name": "Llama 2 70B",
+        "llama-3.2-3b-preview": {
+            "name": "LLaMA 3.2 3B Preview",
             "provider": "groq",
-            "context_length": 4096,
+            "context_length": 128000,
             "is_instruction": True,
             "default_temperature": 0.7,
-            "default_max_tokens": 2048,
+            "default_max_tokens": 8192,
+        },
+        "llama-3.2-11b-vision-preview": {
+            "name": "LLaMA 3.2 11B Vision Preview",
+            "provider": "groq",
+            "context_length": 128000,
+            "is_instruction": True,
+            "default_temperature": 0.7,
+            "default_max_tokens": 8192,
+        },
+        "llama-3.2-90b-vision-preview": {
+            "name": "LLaMA 3.2 90B Vision Preview",
+            "provider": "groq",
+            "context_length": 128000,
+            "is_instruction": True,
+            "default_temperature": 0.7,
+            "default_max_tokens": 8192,
         }
     },
     "replicate": {
-        "meta/meta-llama-3-8b-instruct": {
-            "name": "Llama 3 8B Instruct",
+        "deepseek-ai/deepseek-r1": {
+            "name": "DeepSeek R1",
             "provider": "replicate",
-            "context_length": 4096,
-            "is_instruction": True,
-            "default_temperature": 0.7,
-            "default_max_tokens": 2048,
-        },
-        "meta/meta-llama-3-70b-instruct": {
-            "name": "Llama 3 70B Instruct",
-            "provider": "replicate",
-            "context_length": 4096,
-            "is_instruction": True,
-            "default_temperature": 0.7,
-            "default_max_tokens": 2048,
-        },
-        "mistralai/mistral-7b-instruct": {
-            "name": "Mistral 7B Instruct",
-            "provider": "replicate",
-            "context_length": 4096,
+            "context_length": 128000,
             "is_instruction": True,
             "default_temperature": 0.7,
             "default_max_tokens": 2048,
