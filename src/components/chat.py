@@ -55,13 +55,15 @@ class ChatInterface:
         with st.chat_message("assistant"):
             st.session_state.is_processing = True
             try:
-                response_container = st.container()
-                thinking_container = st.empty()
+                # Create containers in desired order
                 timer_container = st.empty()
                 token_container = st.empty()
+                thinking_container = st.empty()
+                response_container = st.empty()
                 
                 start_time = time.time()
                 full_response = ""
+                displayed_response = ""
                 thinking_phase = ""
                 is_thinking = True
                 
@@ -87,6 +89,7 @@ class ChatInterface:
                         if "</think>" in full_response and is_thinking:
                             thinking_phase, remaining = self._extract_thinking_phase(full_response)
                             full_response = remaining
+                            displayed_response = ""  # Reset displayed response after thinking phase
                             is_thinking = False
                             
                             # Display thinking phase in styled container
@@ -112,8 +115,9 @@ class ChatInterface:
                                     </div>
                                     """, unsafe_allow_html=True)
                         else:
-                            response_container.markdown(full_response + "▌")
-                            st.session_state.response_tokens = len(full_response.split())
+                            displayed_response += content
+                            response_container.markdown(displayed_response + "▌")
+                            st.session_state.response_tokens = len(displayed_response.split())
                         
                         # Update elapsed time and token counts
                         elapsed_time = time.time() - start_time
@@ -125,16 +129,16 @@ class ChatInterface:
                 
                 # Final update
                 if thinking_phase:
-                    response_container.markdown(full_response)
+                    response_container.markdown(displayed_response)
                 else:
                     # If no thinking phase was detected, treat everything as response
-                    response_container.markdown(full_response)
-                    st.session_state.response_tokens = len(full_response.split())
+                    response_container.markdown(displayed_response)
+                    st.session_state.response_tokens = len(displayed_response.split())
                     st.session_state.thinking_tokens = 0
                 
                 self.memory_manager.add_message("assistant", f"""
                 <think>{thinking_phase}</think>
-                {full_response}
+                {displayed_response}
                 """.strip())
 
             except Exception as e:
