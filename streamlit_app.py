@@ -1,3 +1,4 @@
+# Import required libraries
 import streamlit as st
 import os
 from src.components.model_selector import ModelSelector
@@ -37,7 +38,7 @@ with st.sidebar:
         if st.session_state.GROQ_API_KEY:
             st.success('Groq API key already provided!', icon='✅')
         else:
-                  groq_key = st.text_input("Enter Groq API Key", type="password")
+            groq_key = st.text_input("Enter Groq API Key", type="password")
             if groq_key:
                 st.session_state.GROQ_API_KEY = groq_key
                 os.environ["GROQ_API_KEY"] = groq_key
