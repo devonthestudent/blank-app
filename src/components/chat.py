@@ -63,9 +63,11 @@ class ChatInterface:
                 
                 start_time = time.time()
                 full_response = ""
+                thinking_buffer = ""
                 displayed_response = ""
                 thinking_phase = ""
                 is_thinking = True
+                end_tag_buffer = ""
                 
                 # Get model configuration from session state
                 model_config = st.session_state.get("model_config", {})
@@ -85,35 +87,45 @@ class ChatInterface:
                         content = chunk.choices[0].delta.content
                         full_response += content
                         
-                        # Extract thinking phase and response
-                        if "</think>" in full_response and is_thinking:
-                            thinking_phase, remaining = self._extract_thinking_phase(full_response)
-                            full_response = remaining
-                            displayed_response = ""  # Reset displayed response after thinking phase
-                            is_thinking = False
-                            
-                            # Display thinking phase in styled container
-                            thinking_container.markdown(f"""
-                            <div style='background-color: #f0f2f6; padding: 1rem; border-radius: 0.5rem; margin: 0.5rem 0;'>
-                                <div style='color: #666; font-style: italic;'>
-                                    "{thinking_phase}"
-                                </div>
-                            </div>
-                            """, unsafe_allow_html=True)
-                            
-                            # Update token count for thinking phase
-                            st.session_state.thinking_tokens = len(thinking_phase.split())
-                        
+                        # Check for end of thinking phase
                         if is_thinking:
-                            with thinking_container:
-                                with st.spinner("Thinking..."):
-                                    st.markdown(f"""
-                                    <div style='background-color: #f0f2f6; padding: 1rem; border-radius: 0.5rem; margin: 0.5rem 0;'>
-                                        <div style='color: #666; font-style: italic;'>
-                                            "{full_response}"
-                                        </div>
+                            end_tag_buffer += content
+                            if len(end_tag_buffer) > 8:  # Keep only last 8 characters
+                                end_tag_buffer = end_tag_buffer[-8:]
+                            
+                            if "</think>" in full_response and is_thinking:
+                                thinking_phase, remaining = self._extract_thinking_phase(full_response)
+                                full_response = remaining
+                                displayed_response = ""
+                                is_thinking = False
+                                
+                                # Display final thinking phase in styled container
+                                thinking_container.markdown(f"""
+                                <div style='background-color: #f0f2f6; padding: 1rem; border-radius: 0.5rem; margin: 0.5rem 0;'>
+                                    <div style='color: #666; font-style: italic;'>
+                                        "{thinking_phase}"
                                     </div>
-                                    """, unsafe_allow_html=True)
+                                </div>
+                                """, unsafe_allow_html=True)
+                                
+                                # Update token count for thinking phase
+                                st.session_state.thinking_tokens = len(thinking_phase.split())
+                            else:
+                                # Only display content up to potential partial </think> tag
+                                safe_content = content
+                                if "</th" in end_tag_buffer or "think>" in end_tag_buffer:
+                                    safe_content = ""
+                                thinking_buffer += safe_content
+                                
+                                with thinking_container:
+                                    with st.spinner("Thinking..."):
+                                        st.markdown(f"""
+                                        <div style='background-color: #f0f2f6; padding: 1rem; border-radius: 0.5rem; margin: 0.5rem 0;'>
+                                            <div style='color: #666; font-style: italic;'>
+                                                "{thinking_buffer}"
+                                            </div>
+                                        </div>
+                                        """, unsafe_allow_html=True)
                         else:
                             displayed_response += content
                             response_container.markdown(displayed_response + "▌")

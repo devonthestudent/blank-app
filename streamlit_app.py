@@ -118,7 +118,8 @@ else:
 st.markdown("---")
 st.markdown("""
     <div style='text-align: center'>
-        <p>Built with ❤️ using LiteLLM by D the student</p>
-        <p>Supporting Groq and Replicate models</p>
+        <p>Created by D the student using LiteLLM ❤️</p>
+        <p>Powered by Groq and Replicate models</p>
+        <p style='color: #666; font-size: 0.8em;'>Made with Cursor</p>
     </div>
 """, unsafe_allow_html=True)
