@@ -1,5 +1,6 @@
 import streamlit as st
-from typing import Dict, Any, Generator
+import time
+from typing import Dict, Any, Generator, Tuple
 from ..utils.api_handlers import APIHandler
 from .memory import MemoryManager
 
@@ -13,6 +14,24 @@ class ChatInterface:
         """Initialize session state variables for the chat interface."""
         if "is_processing" not in st.session_state:
             st.session_state.is_processing = False
+        if "thinking_tokens" not in st.session_state:
+            st.session_state.thinking_tokens = 0
+        if "response_tokens" not in st.session_state:
+            st.session_state.response_tokens = 0
+
+    def _extract_thinking_phase(self, text: str) -> Tuple[str, str]:
+        """Extract thinking phase and response from text."""
+        thinking = ""
+        response = text
+
+        if "<think>" in text and "</think>" in text:
+            start_idx = text.find("<think>") + len("<think>")
+            end_idx = text.find("</think>")
+            if start_idx < end_idx:
+                thinking = text[start_idx:end_idx].strip()
+                response = text[end_idx + len("</think>"):].strip()
+
+        return thinking, response
 
     def render(self):
         """Render the chat interface."""
@@ -36,11 +55,22 @@ class ChatInterface:
         with st.chat_message("assistant"):
             st.session_state.is_processing = True
             try:
-                response_placeholder = st.empty()
+                response_container = st.container()
+                thinking_container = st.empty()
+                timer_container = st.empty()
+                token_container = st.empty()
+                
+                start_time = time.time()
                 full_response = ""
+                thinking_phase = ""
+                is_thinking = True
                 
                 # Get model configuration from session state
                 model_config = st.session_state.get("model_config", {})
+                
+                # Reset token counters
+                st.session_state.thinking_tokens = 0
+                st.session_state.response_tokens = 0
                 
                 # Generate response
                 for chunk in self.api_handler.generate_response(
@@ -50,11 +80,62 @@ class ChatInterface:
                     system_prompt=model_config.get("system_prompt")
                 ):
                     if chunk.choices[0].delta.content:
-                        full_response += chunk.choices[0].delta.content
-                        response_placeholder.markdown(full_response + "▌")
+                        content = chunk.choices[0].delta.content
+                        full_response += content
+                        
+                        # Extract thinking phase and response
+                        if "</think>" in full_response and is_thinking:
+                            thinking_phase, remaining = self._extract_thinking_phase(full_response)
+                            full_response = remaining
+                            is_thinking = False
+                            
+                            # Display thinking phase in styled container
+                            thinking_container.markdown(f"""
+                            <div style='background-color: #f0f2f6; padding: 1rem; border-radius: 0.5rem; margin: 0.5rem 0;'>
+                                <div style='color: #666; font-style: italic;'>
+                                    "{thinking_phase}"
+                                </div>
+                            </div>
+                            """, unsafe_allow_html=True)
+                            
+                            # Update token count for thinking phase
+                            st.session_state.thinking_tokens = len(thinking_phase.split())
+                        
+                        if is_thinking:
+                            with thinking_container:
+                                with st.spinner("Thinking..."):
+                                    st.markdown(f"""
+                                    <div style='background-color: #f0f2f6; padding: 1rem; border-radius: 0.5rem; margin: 0.5rem 0;'>
+                                        <div style='color: #666; font-style: italic;'>
+                                            "{full_response}"
+                                        </div>
+                                    </div>
+                                    """, unsafe_allow_html=True)
+                        else:
+                            response_container.markdown(full_response + "▌")
+                            st.session_state.response_tokens = len(full_response.split())
+                        
+                        # Update elapsed time and token counts
+                        elapsed_time = time.time() - start_time
+                        timer_container.markdown(f"⏱️ {elapsed_time:.1f}s")
+                        token_container.markdown(
+                            f"🤔 Thinking: {st.session_state.thinking_tokens} tokens | "
+                            f"💭 Response: {st.session_state.response_tokens} tokens"
+                        )
                 
-                response_placeholder.markdown(full_response)
-                self.memory_manager.add_message("assistant", full_response)
+                # Final update
+                if thinking_phase:
+                    response_container.markdown(full_response)
+                else:
+                    # If no thinking phase was detected, treat everything as response
+                    response_container.markdown(full_response)
+                    st.session_state.response_tokens = len(full_response.split())
+                    st.session_state.thinking_tokens = 0
+                
+                self.memory_manager.add_message("assistant", f"""
+                <think>{thinking_phase}</think>
+                {full_response}
+                """.strip())
 
             except Exception as e:
                 st.error(f"Error generating response: {str(e)}")
