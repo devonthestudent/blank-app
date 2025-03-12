@@ -142,7 +142,6 @@ with st.sidebar:
         if "model_config" in st.session_state:
             chat_interface = ChatInterface(model_config["model_name"])
             chat_interface.memory_manager.render_memory_settings()
-            chat_interface.render_theme_selector()
     else:
         st.info("Please enter your API key to access the models.", icon="🎀")
 
