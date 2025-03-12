@@ -9,7 +9,7 @@ SUPPORTED_MODELS = {
             "context_length": 8192,
             "is_instruction": True,
             "default_temperature": 0.7,
-            "default_max_tokens": 4096,
+            "default_max_tokens": 4000,
         }
     },
     "meta": {
@@ -19,7 +19,7 @@ SUPPORTED_MODELS = {
             "context_length": 128000,
             "is_instruction": True,
             "default_temperature": 0.7,
-            "default_max_tokens": 32768,
+            "default_max_tokens": 32000,
         },
         "groq/llama-3.1-8b-instant": {
             "name": "LLaMA 3.1 8B Instant",
@@ -27,7 +27,7 @@ SUPPORTED_MODELS = {
             "context_length": 128000,
             "is_instruction": True,
             "default_temperature": 0.7,
-            "default_max_tokens": 8192,
+            "default_max_tokens": 8000,
         },
         "groq/llama-guard-3-8b": {
             "name": "LLaMA Guard 3 8B",
@@ -35,7 +35,7 @@ SUPPORTED_MODELS = {
             "context_length": 8192,
             "is_instruction": True,
             "default_temperature": 0.7,
-            "default_max_tokens": 4096,
+            "default_max_tokens": 4000,
         },
         "groq/llama3-70b-8192": {
             "name": "LLaMA 3 70B",
@@ -43,7 +43,7 @@ SUPPORTED_MODELS = {
             "context_length": 8192,
             "is_instruction": True,
             "default_temperature": 0.7,
-            "default_max_tokens": 4096,
+            "default_max_tokens": 4000,
         },
         "groq/llama3-8b-8192": {
             "name": "LLaMA 3 8B",
@@ -51,7 +51,7 @@ SUPPORTED_MODELS = {
             "context_length": 8192,
             "is_instruction": True,
             "default_temperature": 0.7,
-            "default_max_tokens": 4096,
+            "default_max_tokens": 4000,
         }
     },
     "mistral": {
@@ -61,7 +61,7 @@ SUPPORTED_MODELS = {
             "context_length": 32768,
             "is_instruction": True,
             "default_temperature": 0.7,
-            "default_max_tokens": 16384,
+            "default_max_tokens": 16000,
         }
     },
     "alibaba": {
@@ -71,7 +71,7 @@ SUPPORTED_MODELS = {
             "context_length": 128000,
             "is_instruction": True,
             "default_temperature": 0.7,
-            "default_max_tokens": 2048,
+            "default_max_tokens": 2000,
         },
         "groq/qwen-2.5-coder-32b": {
             "name": "Qwen 2.5 Coder 32B",
@@ -79,7 +79,7 @@ SUPPORTED_MODELS = {
             "context_length": 128000,
             "is_instruction": True,
             "default_temperature": 0.7,
-            "default_max_tokens": 2048,
+            "default_max_tokens": 2000,
         },
         "groq/qwen-2.5-32b": {
             "name": "Qwen 2.5 32B",
@@ -87,7 +87,7 @@ SUPPORTED_MODELS = {
             "context_length": 128000,
             "is_instruction": True,
             "default_temperature": 0.7,
-            "default_max_tokens": 2048,
+            "default_max_tokens": 2000,
         }
     },
     "deepseek": {
@@ -97,7 +97,7 @@ SUPPORTED_MODELS = {
             "context_length": 128000,
             "is_instruction": True,
             "default_temperature": 0.7,
-            "default_max_tokens": 16384,
+            "default_max_tokens": 16000,
         },
         "groq/deepseek-r1-distill-llama-70b-specdec": {
             "name": "DeepSeek R1 Distill LLaMA 70B SpecDec",
@@ -105,7 +105,7 @@ SUPPORTED_MODELS = {
             "context_length": 128000,
             "is_instruction": True,
             "default_temperature": 0.7,
-            "default_max_tokens": 16384,
+            "default_max_tokens": 16000,
         },
         "groq/deepseek-r1-distill-llama-70b": {
             "name": "DeepSeek R1 Distill LLaMA 70B",
@@ -113,7 +113,7 @@ SUPPORTED_MODELS = {
             "context_length": 128000,
             "is_instruction": True,
             "default_temperature": 0.7,
-            "default_max_tokens": 2048,
+            "default_max_tokens": 2000,
         }
     },
     "replicate": {
@@ -123,7 +123,7 @@ SUPPORTED_MODELS = {
             "context_length": 128000,
             "is_instruction": True,
             "default_temperature": 0.7,
-            "default_max_tokens": 2048,
+            "default_max_tokens": 2000,
         }
     }
 }
