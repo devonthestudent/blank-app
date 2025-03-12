@@ -1,95 +1,61 @@
 import streamlit as st
-import replicate
 import os
-from litellm import completion
-import os
-# App title
-st.set_page_config(page_title="🦙💬 Llama 2 Chatbot")
+from src.components.model_selector import ModelSelector
+from src.components.chat import ChatInterface
+from src.components.memory import MemoryManager
 
-# Replicate Credentials
+# Page configuration
+st.set_page_config(
+    page_title="AI Chat Interface",
+    page_icon="🤖",
+    layout="wide",
+    initial_sidebar_state="expanded"
+)
+
+# Initialize components
+model_selector = ModelSelector()
+
+# Sidebar
 with st.sidebar:
-    st.title('🦙💬 John Smith Chatbot')
-    if 'REPLICATE_API_TOKEN' in st.secrets:
-        st.success('API key already provided!', icon='✅')
-        replicate_api = st.secrets['REPLICATE_API_TOKEN']
-        os.environ["REPLICATE_API_KEY"] = replicate_api
-    else:
-        replicate_api = st.text_input('Enter Replicate API token:', type='password')
-        if not (replicate_api.startswith('r8_') and len(replicate_api)==40):
-            st.warning('Please enter your credentials!', icon='⚠️')
-        else:
-            st.success('Proceed to entering your prompt message!', icon='👉')
-
-    # Refactored from https://github.com/a16z-infra/llama2-chatbot
-    st.subheader('Models and parameters')
-    selected_model = st.sidebar.selectbox('Choose a Llama2 model', ['qwen-v3', 'Llama3-70B','deepseek-r1'], key='selected_model')
-    if selected_model == 'qwen-32b':
-        llm = ''
-    elif selected_model == 'Llama2-13B':
-        llm = 'a16z-infra/llama13b-v2-chat:df7690f1994d94e96ad9d568eac121aecf50684a0b0963b25a41cc40061269e5'
-    else:
-        llm = 'replicate/deepseek-ai/deepseek-r1'
+    st.title("🤖 AI Chat Interface")
     
-    temperature = st.sidebar.slider('temperature', min_value=0.01, max_value=5.0, value=0.1, step=0.01)
-    top_p = st.sidebar.slider('top_p', min_value=0.01, max_value=1.0, value=0.9, step=0.01)
-    max_length = st.sidebar.slider('max_length', min_value=64, max_value=4096, value=512, step=8)
+    # API Key inputs
+    st.subheader("API Keys")
+    groq_key = st.text_input("Groq API Key", type="password")
+    replicate_key = st.text_input("Replicate API Key", type="password")
     
-    st.markdown('📖 Learn how to build this app in this [blog](https://blog.streamlit.io/how-to-build-a-llama-2-chatbot/)!')
-os.environ['REPLICATE_API_TOKEN'] = replicate_api
-
-# Store LLM generated responses
-if "messages" not in st.session_state.keys():
-    st.session_state.messages = [{"role": "assistant", "content": "How may I assist you today?"}]
-
-# Display or clear chat messages
-for message in st.session_state.messages:
-    with st.chat_message(message["role"]):
-        st.write(message["content"])
-
-def clear_chat_history():
-    st.session_state.messages = [{"role": "assistant", "content": "How may I assist you today?"}]
-st.sidebar.button('Clear Chat History', on_click=clear_chat_history)
-
-
-# Function for generating LLaMA2 response
-def generate_llama2_response(prompt_input):
-    string_dialogue = "You are a helpful assistant. You do not respond as 'User' or pretend to be 'User'. You only respond once as 'Assistant'."
-    for dict_message in st.session_state.messages:
-        if dict_message["role"] == "user":
-            string_dialogue += "User: " + dict_message["content"] + "\n\n"
-        else:
-            string_dialogue += "Assistant: " + dict_message["content"] + "\n\n"
-    # output = replicate.run(llm, 
-    #                        input={"prompt": f"{string_dialogue} {prompt_input} Assistant: ",
-     #                             "temperature":temperature, "top_p":top_p, "max_length":max_length, "repetition_penalty":1})
+    # Set API keys in environment
+    if groq_key:
+        os.environ["GROQ_API_KEY"] = groq_key
+    if replicate_key:
+        os.environ["REPLICATE_API_KEY"] = replicate_key
     
+    # Model selection and configuration
+    model_config = model_selector.render()
+    
+    # Store model configuration in session state
+    st.session_state["model_config"] = model_config
 
-    # replicate llama-3 call
-    response = completion(
-        model= llm, 
-        
-        messages = [{ "content":prompt_input ,"role": "user"}],
-        stream=True
-    )
-    return response
+# Main chat interface
+st.title("Chat with AI")
 
-# User-provided prompt
-if prompt := st.chat_input(disabled=not replicate_api):
-    st.session_state.messages.append({"role": "user", "content": prompt})
-    with st.chat_message("user"):
-        st.write(prompt)
+# Initialize chat interface with selected model
+chat_interface = ChatInterface(model_config["model_name"])
 
-# Generate a new response if last message is not from assistant
-if st.session_state.messages[-1]["role"] != "assistant":
-    with st.chat_message("assistant"):
-        with st.spinner("Thinking..."):
-            response = generate_llama2_response(prompt)
-            placeholder = st.empty()
-            full_response = ''
-            for item in response:
-                part = item.choices[0].delta.content or ""
-                full_response += part
-                placeholder.markdown(full_response)
-            placeholder.markdown(full_response)
-    message = {"role": "assistant", "content": full_response}
-    st.session_state.messages.append(message)
+# Render memory settings
+chat_interface.memory_manager.render_memory_settings()
+
+# Render theme selector
+chat_interface.render_theme_selector()
+
+# Render chat interface
+chat_interface.render()
+
+# Footer
+st.markdown("---")
+st.markdown("""
+    <div style='text-align: center'>
+        <p>Built with ❤️ using Streamlit and LiteLLM</p>
+        <p>Supporting Groq and Replicate models</p>
+    </div>
+""", unsafe_allow_html=True)
