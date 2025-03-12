@@ -56,6 +56,18 @@ st.markdown("""
     </style>
 """, unsafe_allow_html=True)
 
+# Clear cache button
+col1, col2 = st.columns([1, 5])
+with col1:
+    if st.button("🗑️ Clear All", help="Clear chat history and cache"):
+        # Clear session state
+        for key in list(st.session_state.keys()):
+            del st.session_state[key]
+        # Clear cache
+        st.cache_data.clear()
+        st.cache_resource.clear()
+        st.rerun()
+
 # Initialize session state for API keys if not exists
 if 'GROQ_API_KEY' not in st.session_state:
     # Try to get the key from secrets first

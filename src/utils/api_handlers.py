@@ -58,14 +58,20 @@ class APIHandler:
         system_prompt: str = None
     ) -> Generator[Dict[str, Any], None, None]:
         """Generate a response from the model."""
-        if temperature is None:
-            temperature = self.model_config["default_temperature"]
-        if max_tokens is None:
-            max_tokens = self.model_config["default_max_tokens"]
-
-        formatted_messages = self._format_messages(messages, system_prompt)
-
         try:
+            if temperature is None:
+                temperature = self.model_config["default_temperature"]
+            if max_tokens is None:
+                max_tokens = self.model_config["default_max_tokens"]
+
+            formatted_messages = self._format_messages(messages, system_prompt)
+
+            # Debug information
+            print(f"Generating response with model: {self.model_name}")
+            print(f"Temperature: {temperature}")
+            print(f"Max tokens: {max_tokens}")
+            print(f"Number of messages: {len(formatted_messages)}")
+
             response = completion(
                 model=self.model_name,
                 messages=formatted_messages,
@@ -76,13 +82,16 @@ class APIHandler:
 
             if stream:
                 for chunk in response:
-                    if chunk.choices[0].delta.content:
+                    if chunk and hasattr(chunk, 'choices') and chunk.choices and hasattr(chunk.choices[0], 'delta'):
                         yield chunk
             else:
-                yield response
+                if response and hasattr(response, 'choices'):
+                    yield response
 
         except Exception as e:
-            raise Exception(f"Error generating response: {str(e)}")
+            error_msg = f"Error generating response: {str(e)}"
+            print(f"API Error: {error_msg}")  # Debug information
+            raise Exception(error_msg)
 
     def get_default_system_prompt(self) -> str:
         """Get the default system prompt for the model type."""

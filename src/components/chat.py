@@ -60,6 +60,7 @@ class ChatInterface:
                 token_container = st.empty()
                 thinking_container = st.empty()
                 response_container = st.empty()
+                error_container = st.empty()
                 
                 start_time = time.time()
                 full_response = ""
@@ -71,89 +72,101 @@ class ChatInterface:
                 
                 # Get model configuration from session state
                 model_config = st.session_state.get("model_config", {})
+                if not model_config:
+                    raise ValueError("Model configuration not found in session state")
                 
                 # Reset token counters
                 st.session_state.thinking_tokens = 0
                 st.session_state.response_tokens = 0
                 
-                # Generate response
-                for chunk in self.api_handler.generate_response(
-                    messages=self.memory_manager.get_messages(),
-                    temperature=model_config.get("temperature"),
-                    max_tokens=model_config.get("max_tokens"),
-                    system_prompt=model_config.get("system_prompt")
-                ):
-                    if chunk.choices[0].delta.content:
-                        content = chunk.choices[0].delta.content
-                        full_response += content
-                        
-                        # Check for end of thinking phase
-                        if is_thinking:
-                            end_tag_buffer += content
-                            if len(end_tag_buffer) > 8:  # Keep only last 8 characters
-                                end_tag_buffer = end_tag_buffer[-8:]
+                try:
+                    # Generate response
+                    for chunk in self.api_handler.generate_response(
+                        messages=self.memory_manager.get_messages(),
+                        temperature=model_config.get("temperature"),
+                        max_tokens=model_config.get("max_tokens"),
+                        system_prompt=model_config.get("system_prompt")
+                    ):
+                        if chunk and hasattr(chunk, 'choices') and chunk.choices and hasattr(chunk.choices[0], 'delta') and chunk.choices[0].delta.content:
+                            content = chunk.choices[0].delta.content
+                            full_response += content
                             
-                            if "</think>" in full_response and is_thinking:
-                                thinking_phase, remaining = self._extract_thinking_phase(full_response)
-                                full_response = remaining
-                                displayed_response = ""
-                                is_thinking = False
+                            # Check for end of thinking phase
+                            if is_thinking:
+                                end_tag_buffer += content
+                                if len(end_tag_buffer) > 8:  # Keep only last 8 characters
+                                    end_tag_buffer = end_tag_buffer[-8:]
                                 
-                                # Display final thinking phase in styled container
-                                thinking_container.markdown(f"""
-                                <div style='background-color: #f0f2f6; padding: 1rem; border-radius: 0.5rem; margin: 0.5rem 0;'>
-                                    <div style='color: #666; font-style: italic;'>
-                                        "{thinking_phase}"
-                                    </div>
-                                </div>
-                                """, unsafe_allow_html=True)
-                                
-                                # Update token count for thinking phase
-                                st.session_state.thinking_tokens = len(thinking_phase.split())
-                            else:
-                                # Only display content up to potential partial </think> tag
-                                safe_content = content
-                                if "</th" in end_tag_buffer or "think>" in end_tag_buffer:
-                                    safe_content = ""
-                                thinking_buffer += safe_content
-                                
-                                with thinking_container:
-                                    with st.spinner("Thinking..."):
-                                        st.markdown(f"""
-                                        <div style='background-color: #f0f2f6; padding: 1rem; border-radius: 0.5rem; margin: 0.5rem 0;'>
-                                            <div style='color: #666; font-style: italic;'>
-                                                "{thinking_buffer}"
-                                            </div>
+                                if "</think>" in full_response and is_thinking:
+                                    thinking_phase, remaining = self._extract_thinking_phase(full_response)
+                                    full_response = remaining
+                                    displayed_response = ""
+                                    is_thinking = False
+                                    
+                                    # Display final thinking phase in styled container
+                                    thinking_container.markdown(f"""
+                                    <div style='background-color: #f0f2f6; padding: 1rem; border-radius: 0.5rem; margin: 0.5rem 0;'>
+                                        <div style='color: #666; font-style: italic;'>
+                                            "{thinking_phase}"
                                         </div>
-                                        """, unsafe_allow_html=True)
-                        else:
-                            displayed_response += content
-                            response_container.markdown(displayed_response + "▌")
-                            st.session_state.response_tokens = len(displayed_response.split())
-                        
-                        # Update elapsed time and token counts
-                        elapsed_time = time.time() - start_time
-                        timer_container.markdown(f"⏱️ {elapsed_time:.1f}s")
-                        token_container.markdown(
-                            f"🤔 Thinking: {st.session_state.thinking_tokens} tokens | "
-                            f"💭 Response: {st.session_state.response_tokens} tokens"
-                        )
-                
-                # Final update
-                if thinking_phase:
-                    response_container.markdown(displayed_response)
-                else:
-                    # If no thinking phase was detected, treat everything as response
-                    response_container.markdown(displayed_response)
-                    st.session_state.response_tokens = len(displayed_response.split())
-                    st.session_state.thinking_tokens = 0
-                
-                self.memory_manager.add_message("assistant", f"""
-                <think>{thinking_phase}</think>
-                {displayed_response}
-                """.strip())
+                                    </div>
+                                    """, unsafe_allow_html=True)
+                                    
+                                    # Update token count for thinking phase
+                                    st.session_state.thinking_tokens = len(thinking_phase.split())
+                                else:
+                                    # Only display content up to potential partial </think> tag
+                                    safe_content = content
+                                    if "</th" in end_tag_buffer or "think>" in end_tag_buffer:
+                                        safe_content = ""
+                                    thinking_buffer += safe_content
+                                    
+                                    with thinking_container:
+                                        with st.spinner("Thinking..."):
+                                            st.markdown(f"""
+                                            <div style='background-color: #f0f2f6; padding: 1rem; border-radius: 0.5rem; margin: 0.5rem 0;'>
+                                                <div style='color: #666; font-style: italic;'>
+                                                    "{thinking_buffer}"
+                                                </div>
+                                            </div>
+                                            """, unsafe_allow_html=True)
+                            else:
+                                displayed_response += content
+                                response_container.markdown(displayed_response + "▌")
+                                st.session_state.response_tokens = len(displayed_response.split())
+                            
+                            # Update elapsed time and token counts
+                            elapsed_time = time.time() - start_time
+                            timer_container.markdown(f"⏱️ {elapsed_time:.1f}s")
+                            token_container.markdown(
+                                f"🤔 Thinking: {st.session_state.thinking_tokens} tokens | "
+                                f"💭 Response: {st.session_state.response_tokens} tokens"
+                            )
+                    
+                    # Final update
+                    if thinking_phase:
+                        response_container.markdown(displayed_response)
+                    else:
+                        # If no thinking phase was detected, treat everything as response
+                        response_container.markdown(displayed_response)
+                        st.session_state.response_tokens = len(displayed_response.split())
+                        st.session_state.thinking_tokens = 0
+                    
+                    if not displayed_response.strip():
+                        error_container.warning("No response generated. The model might be experiencing issues.")
+                    
+                    self.memory_manager.add_message("assistant", f"""
+                    <think>{thinking_phase}</think>
+                    {displayed_response}
+                    """.strip())
+
+                except Exception as e:
+                    error_msg = f"Error during response generation: {str(e)}"
+                    error_container.error(error_msg)
+                    st.error(f"Model: {model_config.get('model_name', 'Unknown')}")
+                    st.error(f"Provider: {model_config.get('provider', 'Unknown')}")
 
             except Exception as e:
-                st.error(f"Error generating response: {str(e)}")
+                st.error(f"Error in chat interface: {str(e)}")
             finally:
                 st.session_state.is_processing = False 
