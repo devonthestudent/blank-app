@@ -3,14 +3,25 @@ from typing import Dict, Any
 from ..config.models_config import SUPPORTED_MODELS
 
 class ModelSelector:
-    def __init__(self):
-        self.companies = list(SUPPORTED_MODELS.keys())
+    def __init__(self, api_provider: str):
+        self.api_provider = api_provider
+        self.provider = "replicate" if api_provider == "Premium (Replicate)" else "groq"
+        
+        # Filter companies based on provider
+        self.companies = [
+            company for company, models in SUPPORTED_MODELS.items()
+            if any(model["provider"] == self.provider for model in models.values())
+        ]
+        
+        # Filter models by provider
         self.models_by_company = {
             company: {
                 model_id: config["name"]
                 for model_id, config in models.items()
+                if config["provider"] == self.provider
             }
             for company, models in SUPPORTED_MODELS.items()
+            if any(model["provider"] == self.provider for model in models.values())
         }
 
     def render(self) -> Dict[str, Any]:
