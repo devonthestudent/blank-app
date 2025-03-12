@@ -5,7 +5,7 @@ from src.components.model_selector import ModelSelector
 from src.components.chat import ChatInterface
 from src.components.memory import MemoryManager
 
-# Page configuration
+# Page configuration must be the first Streamlit command
 st.set_page_config(
     page_title="Chat with Jane",
     page_icon="🌸",
@@ -13,7 +13,7 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
-# Custom CSS for feminine styling
+# Initial theme styling
 st.markdown("""
     <style>
     .stApp {
@@ -38,6 +38,20 @@ st.markdown("""
     }
     .stSubheader {
         color: #c71585;
+    }
+    .stChatMessage {
+        border-radius: 15px;
+        padding: 10px;
+        margin: 5px 0;
+    }
+    .stChatInput {
+        border-radius: 20px;
+    }
+    .stTextInput input {
+        border-radius: 20px;
+    }
+    .stSelectbox select {
+        border-radius: 20px;
     }
     </style>
 """, unsafe_allow_html=True)
@@ -105,7 +119,7 @@ with st.sidebar:
             replicate_key = st.text_input("Enter Replicate API Key", type="password")
             if replicate_key:
                 if replicate_key.startswith('r8_') and len(replicate_key) == 40:
-                    st.session_state.REPLICATE_API_KEY = replicate_key
+                          st.session_state.REPLICATE_API_KEY = replicate_key
                     os.environ["REPLICATE_API_KEY"] = replicate_key
                     st.success('Replicate API key successfully loaded!', icon='✨')
                 else:

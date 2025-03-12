@@ -167,15 +167,39 @@ class ChatInterface:
             key="theme"
         )
         if theme == "Dark":
-            st.set_page_config(page_title="AI Chat", layout="wide", initial_sidebar_state="expanded")
             st.markdown("""
                 <style>
                 .stApp {
-                    background-color: #1E1E1E;
+                    background-color: #1E1E1E !important;
                     color: #FFFFFF;
                 }
                 .stChatMessage {
-                    background-color: #2D2D2D;
+                    background-color: #2D2D2D !important;
+                    border-radius: 10px;
+                    padding: 10px;
+                    margin: 5px 0;
+                }
+                .stMarkdown {
+                    color: #FFFFFF;
+                }
+                .stTextInput input {
+                    background-color: #2D2D2D !important;
+                    color: #FFFFFF;
+                }
+                .stSelectbox select {
+                    background-color: #2D2D2D !important;
+                    color: #FFFFFF;
+                }
+                </style>
+                """, unsafe_allow_html=True)
+        else:
+            st.markdown("""
+                <style>
+                .stApp {
+                    background: linear-gradient(to bottom right, #fff5f5, #fff) !important;
+                }
+                .stChatMessage {
+                    background-color: #FFFFFF;
                     border-radius: 10px;
                     padding: 10px;
                     margin: 5px 0;
