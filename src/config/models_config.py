@@ -105,7 +105,7 @@ SUPPORTED_MODELS = {
 #             "default_temperature": 0.7,
 #             "default_max_tokens": 8192,
 #         }
-#     },
+    },
     "replicate": {
         "deepseek-ai/deepseek-r1": {
             "name": "DeepSeek R1",
