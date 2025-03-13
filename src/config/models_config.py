@@ -228,7 +228,7 @@ SUPPORTED_MODELS = {
     },
     "replicate": {
             "replicate/deepseek-ai/deepseek-r1": {
-            "name": "",
+            "name": "deepseek-r1",
             "provider": "replicate",
             "context_length": 8192,
             "is_instruction": True,
