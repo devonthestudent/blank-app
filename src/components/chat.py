@@ -35,6 +35,33 @@ class ChatInterface:
 
     def render(self):
         """Render the chat interface."""
+        # Add keyboard shortcut for clearing chat
+        st.markdown("""
+        <script>
+        document.addEventListener('keydown', function(e) {
+            if ((e.ctrlKey || e.metaKey) && e.key === 'l') {
+                e.preventDefault();
+                window.parent.postMessage({
+                    type: 'clearChat'
+                }, '*');
+            }
+        });
+        </script>
+        """, unsafe_allow_html=True)
+
+        # Handle clear chat message
+        if st.session_state.get('clear_chat', False):
+            self.memory_manager.clear_chat()
+            st.session_state.clear_chat = False
+            st.rerun()
+
+        # Add clear chat button in a more accessible location
+        col1, col2 = st.columns([6, 1])
+        with col2:
+            if st.button("🗑️ Clear Chat", help="Clear chat history (Ctrl/Cmd + L)"):
+                self.memory_manager.clear_chat()
+                st.rerun()
+
         # Display chat messages
         for message in self.memory_manager.get_messages():
             with st.chat_message(message["role"]):

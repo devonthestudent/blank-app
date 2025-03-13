@@ -83,6 +83,22 @@ if 'REPLICATE_API_KEY' not in st.session_state:
 if 'use_custom_groq_key' not in st.session_state:
     st.session_state.use_custom_groq_key = False
 
+# Initialize session state for clear chat functionality
+if 'clear_chat' not in st.session_state:
+    st.session_state.clear_chat = False
+
+# Add JavaScript event handler for keyboard shortcuts
+st.markdown("""
+<script>
+window.addEventListener('message', function(e) {
+    if (e.data.type === 'clearChat') {
+        // Set session state via Streamlit's setComponentValue
+        window.Streamlit.setComponentValue({'clear_chat': true});
+    }
+});
+</script>
+""", unsafe_allow_html=True)
+
 # Sidebar
 with st.sidebar:
     st.title("🌸 Chat Assistant")
