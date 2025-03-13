@@ -13,9 +13,8 @@ class APIHandler:
     def _get_model_config(self) -> Dict[str, Any]:
         """Get the configuration for the current model."""
         for provider, models in SUPPORTED_MODELS.items():
-            for model_id, config in models.items():
-                if model_id in self.model_name:
-                    return config
+            if self.model_name in models:
+                return models[self.model_name]
         raise ValueError(f"Model {self.model_name} not found in configuration")
 
     def _setup_api_keys(self):
@@ -29,22 +28,26 @@ class APIHandler:
 
     def _format_messages(self, messages: List[Dict[str, str]], system_prompt: str = None) -> List[Dict[str, str]]:
         """Format messages according to the model's template."""
-        template = PROMPT_TEMPLATES[self.provider]
         formatted_messages = []
 
         # Add system message if provided
         if system_prompt:
             formatted_messages.append({
                 "role": "system",
-                "content": f"{template['system']['pre_message']}{system_prompt}{template['system']['post_message']}"
+                "content": system_prompt
+            })
+        elif self.model_config.get("is_instruction"):
+            formatted_messages.append({
+                "role": "system",
+                "content": SYSTEM_PROMPTS["instruction"]
             })
 
-        # Format user and assistant messages
+        # Add user and assistant messages without templates
         for msg in messages:
             if msg["role"] in ["user", "assistant"]:
                 formatted_messages.append({
                     "role": msg["role"],
-                    "content": f"{template[msg['role']]['pre_message']}{msg['content']}{template[msg['role']]['post_message']}"
+                    "content": msg["content"]
                 })
 
         return formatted_messages

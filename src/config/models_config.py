@@ -227,13 +227,29 @@ SUPPORTED_MODELS = {
         }
     },
     "replicate": {
-        "deepseek-ai/deepseek-r1": {
-            "name": "DeepSeek R1",
+        "replicate/meta/meta-llama-3-8b-instruct": {
+            "name": "LLaMA 3 8B Instruct",
             "provider": "replicate",
-            "context_length": 128000,
+            "context_length": 8192,
             "is_instruction": True,
             "default_temperature": 0.7,
-            "default_max_tokens": 2000,
+            "default_max_tokens": 4000,
+        },
+        "replicate/meta/meta-llama-3-70b-instruct": {
+            "name": "LLaMA 3 70B Instruct",
+            "provider": "replicate",
+            "context_length": 8192,
+            "is_instruction": True,
+            "default_temperature": 0.7,
+            "default_max_tokens": 4000,
+        },
+        "replicate/meta/meta-llama-3-13b-instruct": {
+            "name": "LLaMA 3 13B Instruct",
+            "provider": "replicate",
+            "context_length": 8192,
+            "is_instruction": True,
+            "default_temperature": 0.7,
+            "default_max_tokens": 4000,
         }
     }
 }
