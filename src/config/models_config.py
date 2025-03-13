@@ -2,6 +2,12 @@ from typing import Dict, Any
 
 # Supported models configuration
 SUPPORTED_MODELS = {
+    # =====================
+    # PRODUCTION MODELS
+    # =====================
+    # Models intended for use in production environments
+    # Meeting high standards for speed and quality
+    
     "google": {
         "groq/gemma2-9b-it": {
             "name": "Gemma 2 9B IT",
@@ -10,6 +16,7 @@ SUPPORTED_MODELS = {
             "is_instruction": True,
             "default_temperature": 0.7,
             "default_max_tokens": 4000,
+            "is_production": True
         }
     },
     "meta": {
@@ -19,7 +26,8 @@ SUPPORTED_MODELS = {
             "context_length": 128000,
             "is_instruction": True,
             "default_temperature": 0.7,
-            "default_max_tokens": 32000,
+            "default_max_tokens": 32768,
+            "is_production": True
         },
         "groq/llama-3.1-8b-instant": {
             "name": "LLaMA 3.1 8B Instant",
@@ -27,7 +35,8 @@ SUPPORTED_MODELS = {
             "context_length": 128000,
             "is_instruction": True,
             "default_temperature": 0.7,
-            "default_max_tokens": 8000,
+            "default_max_tokens": 8192,
+            "is_production": True
         },
         "groq/llama-guard-3-8b": {
             "name": "LLaMA Guard 3 8B",
@@ -36,6 +45,7 @@ SUPPORTED_MODELS = {
             "is_instruction": True,
             "default_temperature": 0.7,
             "default_max_tokens": 4000,
+            "is_production": True
         },
         "groq/llama3-70b-8192": {
             "name": "LLaMA 3 70B",
@@ -44,6 +54,7 @@ SUPPORTED_MODELS = {
             "is_instruction": True,
             "default_temperature": 0.7,
             "default_max_tokens": 4000,
+            "is_production": True
         },
         "groq/llama3-8b-8192": {
             "name": "LLaMA 3 8B",
@@ -52,6 +63,7 @@ SUPPORTED_MODELS = {
             "is_instruction": True,
             "default_temperature": 0.7,
             "default_max_tokens": 4000,
+            "is_production": True
         }
     },
     "mistral": {
@@ -62,58 +74,156 @@ SUPPORTED_MODELS = {
             "is_instruction": True,
             "default_temperature": 0.7,
             "default_max_tokens": 16000,
+            "is_production": True
         }
     },
-    "alibaba": {
+    "huggingface": {
+        "groq/distil-whisper-large-v3-en": {
+            "name": "Distil Whisper Large V3 (English)",
+            "provider": "groq",
+            "is_audio": True,
+            "max_file_size_mb": 25,
+            "is_production": True
+        }
+    },
+    "openai": {
+        "groq/whisper-large-v3": {
+            "name": "Whisper Large V3",
+            "provider": "groq",
+            "is_audio": True,
+            "max_file_size_mb": 25,
+            "is_production": True
+        },
+        "groq/whisper-large-v3-turbo": {
+            "name": "Whisper Large V3 Turbo",
+            "provider": "groq",
+            "is_audio": True,
+            "max_file_size_mb": 25,
+            "is_production": True
+        }
+    },
+
+    # =====================
+    # PREVIEW MODELS
+    # =====================
+    # Models intended for evaluation purposes only
+    # May be discontinued at short notice
+    # Not recommended for production use
+    
+    "alibaba_preview": {
         "groq/qwen-qwq-32b": {
-            "name": "Qwen QWQ 32B",
+            "name": "Qwen QWQ 32B (Preview)",
             "provider": "groq",
             "context_length": 128000,
             "is_instruction": True,
             "default_temperature": 0.7,
-            "default_max_tokens": 2000,
+            "default_max_tokens": 32000,
+            "is_preview": True
         },
         "groq/qwen-2.5-coder-32b": {
-            "name": "Qwen 2.5 Coder 32B",
+            "name": "Qwen 2.5 Coder 32B (Preview)",
             "provider": "groq",
             "context_length": 128000,
             "is_instruction": True,
             "default_temperature": 0.7,
-            "default_max_tokens": 2000,
+            "default_max_tokens": 32000,
+            "is_preview": True
         },
         "groq/qwen-2.5-32b": {
-            "name": "Qwen 2.5 32B",
+            "name": "Qwen 2.5 32B (Preview)",
             "provider": "groq",
             "context_length": 128000,
             "is_instruction": True,
             "default_temperature": 0.7,
-            "default_max_tokens": 2000,
+            "default_max_tokens": 32000,
+            "is_preview": True
         }
     },
-    "deepseek": {
-        "groq/deepseek-r1-distill-qwen-32b": {
-            "name": "DeepSeek R1 Distill Qwen 32B",
+    "mistral_preview": {
+        "groq/mistral-saba-24b": {
+            "name": "Mistral Saba 24B (Preview)",
+            "provider": "groq",
+            "context_length": 32000,
+            "is_instruction": True,
+            "default_temperature": 0.7,
+            "default_max_tokens": 16000,
+            "is_preview": True
+        }
+    },
+    "meta_preview": {
+        "groq/llama-3.3-70b-specdec": {
+            "name": "LLaMA 3.3 70B SpecDec (Preview)",
+            "provider": "groq",
+            "context_length": 8192,
+            "is_instruction": True,
+            "default_temperature": 0.7,
+            "default_max_tokens": 4000,
+            "is_preview": True
+        },
+        "groq/llama-3.2-1b-preview": {
+            "name": "LLaMA 3.2 1B (Preview)",
             "provider": "groq",
             "context_length": 128000,
             "is_instruction": True,
             "default_temperature": 0.7,
-            "default_max_tokens": 16000,
+            "default_max_tokens": 8192,
+            "is_preview": True
+        },
+        "groq/llama-3.2-3b-preview": {
+            "name": "LLaMA 3.2 3B (Preview)",
+            "provider": "groq",
+            "context_length": 128000,
+            "is_instruction": True,
+            "default_temperature": 0.7,
+            "default_max_tokens": 8192,
+            "is_preview": True
+        },
+        "groq/llama-3.2-11b-vision-preview": {
+            "name": "LLaMA 3.2 11B Vision (Preview)",
+            "provider": "groq",
+            "context_length": 128000,
+            "is_instruction": True,
+            "default_temperature": 0.7,
+            "default_max_tokens": 8192,
+            "is_preview": True
+        },
+        "groq/llama-3.2-90b-vision-preview": {
+            "name": "LLaMA 3.2 90B Vision (Preview)",
+            "provider": "groq",
+            "context_length": 128000,
+            "is_instruction": True,
+            "default_temperature": 0.7,
+            "default_max_tokens": 8192,
+            "is_preview": True
+        }
+    },
+    "deepseek_preview": {
+        "groq/deepseek-r1-distill-qwen-32b": {
+            "name": "DeepSeek R1 Distill Qwen 32B (Preview)",
+            "provider": "groq",
+            "context_length": 128000,
+            "is_instruction": True,
+            "default_temperature": 0.7,
+            "default_max_tokens": 16384,
+            "is_preview": True
         },
         "groq/deepseek-r1-distill-llama-70b-specdec": {
-            "name": "DeepSeek R1 Distill LLaMA 70B SpecDec",
+            "name": "DeepSeek R1 Distill LLaMA 70B SpecDec (Preview)",
             "provider": "groq",
             "context_length": 128000,
             "is_instruction": True,
             "default_temperature": 0.7,
-            "default_max_tokens": 16000,
+            "default_max_tokens": 16384,
+            "is_preview": True
         },
         "groq/deepseek-r1-distill-llama-70b": {
-            "name": "DeepSeek R1 Distill LLaMA 70B",
+            "name": "DeepSeek R1 Distill LLaMA 70B (Preview)",
             "provider": "groq",
             "context_length": 128000,
             "is_instruction": True,
             "default_temperature": 0.7,
-            "default_max_tokens": 2000,
+            "default_max_tokens": 32000,
+            "is_preview": True
         }
     },
     "replicate": {
