@@ -55,11 +55,20 @@ class ChatInterface:
             st.session_state.clear_chat = False
             st.rerun()
 
-        # Add clear chat button in a more accessible location
-        col1, col2 = st.columns([6, 1])
+        # Add clear buttons in a more accessible location
+        col1, col2, col3 = st.columns([4, 1, 1])
         with col2:
-            if st.button("🗑️ Clear Chat", help="Clear chat history (Ctrl/Cmd + L)"):
+            if st.button("🗑️ Clear History", help="Clear chat history only (Ctrl/Cmd + L)\nPreserves your API keys and model settings"):
                 self.memory_manager.clear_chat()
+                st.rerun()
+        with col3:
+            if st.button("🧹 Reset All", help="Clear chat history, cache, and all settings\nRequires re-entering API keys"):
+                # Clear session state
+                for key in list(st.session_state.keys()):
+                    del st.session_state[key]
+                # Clear cache
+                st.cache_data.clear()
+                st.cache_resource.clear()
                 st.rerun()
 
         # Display chat messages
