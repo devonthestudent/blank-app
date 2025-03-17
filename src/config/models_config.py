@@ -230,7 +230,7 @@ SUPPORTED_MODELS = {
             "replicate/deepseek-ai/deepseek-r1": {
             "name": "deepseek-r1",
             "provider": "replicate",
-            "context_length": 8192,
+            "context_length": 18192,
             "is_instruction": True,
             "default_temperature": 0.1,
             "default_max_tokens": 8000,
