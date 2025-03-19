@@ -13,8 +13,9 @@ class APIHandler:
     def _get_model_config(self) -> Dict[str, Any]:
         """Get the configuration for the current model."""
         for provider, models in SUPPORTED_MODELS.items():
-            if self.model_name in models:
-                return models[self.model_name]
+            for model_id, config in models.items():
+                if model_id in self.model_name:
+                    return config
         raise ValueError(f"Model {self.model_name} not found in configuration")
 
     def _setup_api_keys(self):
@@ -28,26 +29,22 @@ class APIHandler:
 
     def _format_messages(self, messages: List[Dict[str, str]], system_prompt: str = None) -> List[Dict[str, str]]:
         """Format messages according to the model's template."""
+        template = PROMPT_TEMPLATES[self.provider]
         formatted_messages = []
 
         # Add system message if provided
         if system_prompt:
             formatted_messages.append({
                 "role": "system",
-                "content": system_prompt
-            })
-        elif self.model_config.get("is_instruction"):
-            formatted_messages.append({
-                "role": "system",
-                "content": SYSTEM_PROMPTS["instruction"]
+                "content": f"{template['system']['pre_message']}{system_prompt}{template['system']['post_message']}"
             })
 
-        # Add user and assistant messages without templates
+        # Format user and assistant messages
         for msg in messages:
             if msg["role"] in ["user", "assistant"]:
                 formatted_messages.append({
                     "role": msg["role"],
-                    "content": msg["content"]
+                    "content": f"{template[msg['role']]['pre_message']}{msg['content']}{template[msg['role']]['post_message']}"
                 })
 
         return formatted_messages
@@ -79,10 +76,37 @@ class APIHandler:
 
             if stream:
                 for chunk in response:
-                    if chunk.choices[0].delta.content:
-                        yield chunk
+                    # Handle different response formats
+                    if hasattr(chunk, 'choices') and chunk.choices:
+                        if hasattr(chunk.choices[0], 'delta') and hasattr(chunk.choices[0].delta, 'content'):
+                            content = chunk.choices[0].delta.content
+                            if content:
+                                yield chunk
+                        elif hasattr(chunk.choices[0], 'text'):
+                            content = chunk.choices[0].text
+                            if content:
+                                yield {
+                                    "choices": [{
+                                        "delta": {"content": content}
+                                    }]
+                                }
+                    # Handle string responses (common with Replicate)
+                    elif isinstance(chunk, str):
+                        if chunk.strip():
+                            yield {
+                                "choices": [{
+                                    "delta": {"content": chunk}
+                                }]
+                            }
             else:
-                yield response
+                if hasattr(response, 'choices') and response.choices:
+                    yield response
+                elif isinstance(response, str):
+                    yield {
+                        "choices": [{
+                            "message": {"content": response}
+                        }]
+                    }
 
         except Exception as e:
             raise Exception(f"Error generating response: {str(e)}")
