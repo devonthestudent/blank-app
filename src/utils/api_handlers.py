@@ -75,11 +75,60 @@ class APIHandler:
             )
 
             if stream:
+                buffer = ""
                 for chunk in response:
-                    if chunk.choices[0].delta.content:
-                        yield chunk
+                    # Handle different response formats
+                    content = None
+                    
+                    # Extract content from different response formats
+                    if hasattr(chunk, 'choices') and chunk.choices:
+                        if hasattr(chunk.choices[0], 'delta') and hasattr(chunk.choices[0].delta, 'content'):
+                            content = chunk.choices[0].delta.content
+                        elif hasattr(chunk.choices[0], 'text'):
+                            content = chunk.choices[0].text
+                    elif isinstance(chunk, str):
+                        content = chunk
+
+                    # Process content if we have it
+                    if content:
+                        buffer += content
+                        # If we have a complete thinking section, yield it
+                        if "<think>" in buffer and "</think>" in buffer:
+                            think_start = buffer.find("<think>")
+                            think_end = buffer.find("</think>") + len("</think>")
+                            think_content = buffer[think_start:think_end]
+                            yield {
+                                "choices": [{
+                                    "delta": {"content": think_content}
+                                }]
+                            }
+                            # Keep the rest for the next part
+                            buffer = buffer[think_end:].lstrip()
+                        # If we have content outside thinking tags, yield it
+                        elif not ("<think>" in buffer or "</think>" in buffer):
+                            yield {
+                                "choices": [{
+                                    "delta": {"content": content}
+                                }]
+                            }
+                            buffer = ""
+                
+                # Yield any remaining content
+                if buffer.strip():
+                    yield {
+                        "choices": [{
+                            "delta": {"content": buffer}
+                        }]
+                    }
             else:
-                yield response
+                if hasattr(response, 'choices') and response.choices:
+                    yield response
+                elif isinstance(response, str):
+                    yield {
+                        "choices": [{
+                            "message": {"content": response}
+                        }]
+                    }
 
         except Exception as e:
             raise Exception(f"Error generating response: {str(e)}")
