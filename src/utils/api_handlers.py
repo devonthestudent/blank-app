@@ -76,37 +76,10 @@ class APIHandler:
 
             if stream:
                 for chunk in response:
-                    # Handle different response formats
-                    if hasattr(chunk, 'choices') and chunk.choices:
-                        if hasattr(chunk.choices[0], 'delta') and hasattr(chunk.choices[0].delta, 'content'):
-                            content = chunk.choices[0].delta.content
-                            if content:
-                                yield chunk
-                        elif hasattr(chunk.choices[0], 'text'):
-                            content = chunk.choices[0].text
-                            if content:
-                                yield {
-                                    "choices": [{
-                                        "delta": {"content": content}
-                                    }]
-                                }
-                    # Handle string responses (common with Replicate)
-                    elif isinstance(chunk, str):
-                        if chunk.strip():
-                            yield {
-                                "choices": [{
-                                    "delta": {"content": chunk}
-                                }]
-                            }
+                    if chunk.choices[0].delta.content:
+                        yield chunk
             else:
-                if hasattr(response, 'choices') and response.choices:
-                    yield response
-                elif isinstance(response, str):
-                    yield {
-                        "choices": [{
-                            "message": {"content": response}
-                        }]
-                    }
+                yield response
 
         except Exception as e:
             raise Exception(f"Error generating response: {str(e)}")
