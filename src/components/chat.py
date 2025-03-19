@@ -103,8 +103,7 @@ class ChatInterface:
                 thinking_buffer = ""
                 displayed_response = ""
                 thinking_phase = ""
-                is_thinking = False  # Default to not thinking unless we see <think>
-                end_tag_buffer = ""
+                is_thinking = False
                 has_received_content = False
                 
                 # Get model configuration from session state
@@ -129,47 +128,50 @@ class ChatInterface:
                             has_received_content = True
                             full_response += content
                             
-                            # Check if we're entering thinking phase
-                            if "<think>" in content and not is_thinking:
+                            # Check for thinking phase
+                            if "<think>" in content:
                                 is_thinking = True
-                                thinking_buffer = ""
+                                thinking_buffer = content.split("<think>")[1]
+                                continue
+                            elif "</think>" in content and is_thinking:
+                                is_thinking = False
+                                thinking_buffer += content.split("</think>")[0]
+                                thinking_phase = thinking_buffer.strip()
+                                if thinking_phase:
+                                    thinking_container.markdown(f"""
+                                    <div style='background-color: #f0f2f6; padding: 1rem; border-radius: 0.5rem; margin: 0.5rem 0;'>
+                                        <div style='color: #666; font-style: italic;'>
+                                            "{thinking_phase}"
+                                        </div>
+                                    </div>
+                                    """, unsafe_allow_html=True)
+                                    st.session_state.thinking_tokens = len(thinking_phase.split())
+                                # Get the remaining content after </think>
+                                remaining_content = content.split("</think>")[1]
+                                if remaining_content:
+                                    displayed_response += remaining_content
+                                    response_container.markdown(displayed_response.strip(), unsafe_allow_html=True)
                                 continue
                             
-                            # If we're in thinking phase
+                            # Handle content based on thinking state
                             if is_thinking:
-                                if "</think>" in content:
-                                    is_thinking = False
-                                    thinking_phase = thinking_buffer.strip()
-                                    if thinking_phase:
-                                        thinking_container.markdown(f"""
-                                        <div style='background-color: #f0f2f6; padding: 1rem; border-radius: 0.5rem; margin: 0.5rem 0;'>
-                                            <div style='color: #666; font-style: italic;'>
-                                                "{thinking_phase}"
-                                            </div>
-                                        </div>
-                                        """, unsafe_allow_html=True)
-                                        st.session_state.thinking_tokens = len(thinking_phase.split())
-                                else:
-                                    thinking_buffer += content
-                                    if thinking_buffer.strip():
-                                        with thinking_container:
-                                            with st.spinner("Thinking..."):
-                                                st.markdown(f"""
-                                                <div style='background-color: #f0f2f6; padding: 1rem; border-radius: 0.5rem; margin: 0.5rem 0;'>
-                                                    <div style='color: #666; font-style: italic;'>
-                                                        "{thinking_buffer}"
-                                                    </div>
+                                thinking_buffer += content
+                                if thinking_buffer.strip():
+                                    with thinking_container:
+                                        with st.spinner("Thinking..."):
+                                            st.markdown(f"""
+                                            <div style='background-color: #f0f2f6; padding: 1rem; border-radius: 0.5rem; margin: 0.5rem 0;'>
+                                                <div style='color: #666; font-style: italic;'>
+                                                    "{thinking_buffer}"
                                                 </div>
-                                                """, unsafe_allow_html=True)
+                                            </div>
+                                            """, unsafe_allow_html=True)
                             else:
-                                # Only add to displayed response if we're not in thinking phase
-                                if not any(tag in content for tag in ["<think>", "</think>"]):
-                                    displayed_response += content
-                                    response_container.markdown(
-                                        f"""<div style='white-space: pre-wrap;'>{displayed_response}<span class='blinking'>▌</span></div>""", 
-                                        unsafe_allow_html=True
-                                    )
-                                    st.session_state.response_tokens = len(displayed_response.split())
+                                displayed_response += content
+                                # Clean up excessive newlines and display
+                                cleaned_response = displayed_response.replace("\n\n\n", "\n\n").strip()
+                                response_container.markdown(cleaned_response, unsafe_allow_html=True)
+                                st.session_state.response_tokens = len(cleaned_response.split())
                             
                             # Update elapsed time and token counts
                             elapsed_time = time.time() - start_time
@@ -183,16 +185,14 @@ class ChatInterface:
                     if has_received_content:
                         final_response = displayed_response.strip()
                         if final_response:
-                            # Display final response without cursor
-                            response_container.markdown(final_response)
-                            # Add to memory
+                            # Clean up excessive newlines in final response
+                            final_response = final_response.replace("\n\n\n", "\n\n")
+                            response_container.markdown(final_response, unsafe_allow_html=True)
+                            # Add to memory with proper formatting
                             if thinking_phase:
-                                self.memory_manager.add_message("assistant", f"""
-                                <think>{thinking_phase}</think>
-                                {final_response}
-                                """.strip())
+                                self.memory_manager.add_message("assistant", f"<think>{thinking_phase}</think>\n{final_response}")
                             else:
-                                self.memory_manager.add_message("assistant", final_response.strip())
+                                self.memory_manager.add_message("assistant", final_response)
                         else:
                             error_container.warning("Response was empty after processing.")
                     else:
