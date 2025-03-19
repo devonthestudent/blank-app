@@ -75,7 +75,6 @@ class APIHandler:
             )
 
             if stream:
-                buffer = ""
                 for chunk in response:
                     # Handle different response formats
                     content = None
@@ -87,43 +86,19 @@ class APIHandler:
                         elif hasattr(chunk.choices[0], 'text'):
                             content = chunk.choices[0].text
                     elif isinstance(chunk, str):
-                        content = chunk
+                        content = chunk.strip()
 
-                    # Process content if we have it
+                    # If we have any content, yield it
                     if content:
-                        buffer += content
-                        # If we have a complete thinking section, yield it
-                        if "<think>" in buffer and "</think>" in buffer:
-                            think_start = buffer.find("<think>")
-                            think_end = buffer.find("</think>") + len("</think>")
-                            think_content = buffer[think_start:think_end]
-                            yield {
-                                "choices": [{
-                                    "delta": {"content": think_content}
-                                }]
-                            }
-                            # Keep the rest for the next part
-                            buffer = buffer[think_end:].lstrip()
-                        # If we have content outside thinking tags, yield it
-                        elif not ("<think>" in buffer or "</think>" in buffer):
-                            yield {
-                                "choices": [{
-                                    "delta": {"content": content}
-                                }]
-                            }
-                            buffer = ""
-                
-                # Yield any remaining content
-                if buffer.strip():
-                    yield {
-                        "choices": [{
-                            "delta": {"content": buffer}
-                        }]
-                    }
+                        yield {
+                            "choices": [{
+                                "delta": {"content": content}
+                            }]
+                        }
             else:
                 if hasattr(response, 'choices') and response.choices:
                     yield response
-                elif isinstance(response, str):
+                elif isinstance(response, str) and response.strip():
                     yield {
                         "choices": [{
                             "message": {"content": response}
@@ -131,6 +106,7 @@ class APIHandler:
                     }
 
         except Exception as e:
+            print(f"Debug - Error in generate_response: {str(e)}")  # Add debug print
             raise Exception(f"Error generating response: {str(e)}")
 
     def get_default_system_prompt(self) -> str:
