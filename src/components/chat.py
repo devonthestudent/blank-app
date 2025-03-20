@@ -35,6 +35,13 @@ class ChatInterface:
 
     def render(self):
         """Render the chat interface."""
+        # Add clear chat button
+        col1, col2 = st.columns([6, 1])
+        with col2:
+            if st.button("Clear Chat 🗑️", use_container_width=True):
+                self.memory_manager.clear_messages()
+                st.rerun()
+
         # Display chat messages
         for message in self.memory_manager.get_messages():
             with st.chat_message(message["role"]):

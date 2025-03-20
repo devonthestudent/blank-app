@@ -38,7 +38,7 @@ class MemoryManager:
 
         # Clear chat button
         if st.sidebar.button("Clear Chat History"):
-            self.clear_chat()
+            self.clear_messages()
 
     def add_message(self, role: str, content: str):
         """Add a message to the chat history and manage memory."""
@@ -54,12 +54,12 @@ class MemoryManager:
                 st.session_state.max_memory_tokens
             )
 
-    def clear_chat(self):
-        """Clear the chat history."""
+    def clear_messages(self):
+        """Clear all messages from chat history."""
         st.session_state.messages = []
 
     def get_messages(self) -> List[Dict[str, str]]:
-        """Get the current chat messages."""
+        """Get all messages in chat history."""
         return st.session_state.messages
 
     def get_token_usage(self) -> Dict[str, int]:
@@ -67,6 +67,5 @@ class MemoryManager:
         current_tokens = self.tokenizer.count_conversation_tokens(st.session_state.messages)
         return {
             "current": current_tokens,
-            "max": st.session_state.max_memory_tokens,
-            "available": st.session_state.max_memory_tokens - current_tokens
+            "max": st.session_state.max_memory_tokens
         } 
