@@ -95,8 +95,19 @@ class ChatInterface:
                         max_tokens=model_config.get("max_tokens"),
                         system_prompt=model_config.get("system_prompt")
                     ):
-                        if chunk and hasattr(chunk, 'choices') and chunk.choices and hasattr(chunk.choices[0], 'delta') and chunk.choices[0].delta.content:
-                            content = chunk.choices[0].delta.content
+                        # Extract content from different response formats
+                        content = None
+                        if isinstance(chunk, dict) and 'choices' in chunk:
+                            if 'delta' in chunk['choices'][0]:
+                                content = chunk['choices'][0]['delta'].get('content', '')
+                            elif 'text' in chunk['choices'][0]:
+                                content = chunk['choices'][0]['text']
+                            elif 'message' in chunk['choices'][0]:
+                                content = chunk['choices'][0]['message'].get('content', '')
+                        elif isinstance(chunk, str):
+                            content = chunk
+
+                        if content:
                             has_received_content = True
                             full_response += content
                             
@@ -137,7 +148,7 @@ class ChatInterface:
                                 if not any(tag in content for tag in ["<think>", "</think>"]):
                                     displayed_response += content
                                     response_container.markdown(
-                                        f"""<div style='white-space: pre-wrap;'>{displayed_response}<span class='blinking'>▌</span></div>""", 
+                                        displayed_response,
                                         unsafe_allow_html=True
                                     )
                                     st.session_state.response_tokens = len(displayed_response.split())
@@ -158,12 +169,9 @@ class ChatInterface:
                             response_container.markdown(final_response)
                             # Add to memory
                             if thinking_phase:
-                                self.memory_manager.add_message("assistant", f"""
-                                <think>{thinking_phase}</think>
-                                {final_response}
-                                """.strip())
+                                self.memory_manager.add_message("assistant", f"<think>{thinking_phase}</think>\n{final_response}")
                             else:
-                                self.memory_manager.add_message("assistant", final_response.strip())
+                                self.memory_manager.add_message("assistant", final_response)
                         else:
                             error_container.warning("Response was empty after processing.")
                     else:
