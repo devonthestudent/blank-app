@@ -1,5 +1,5 @@
 streamlit>=1.31.0
 replicate
-litellm>=1.30.0
+litellm==1.67.3 
 tiktoken>=0.5.2
 python-dotenv>=1.0.0
