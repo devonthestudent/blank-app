@@ -86,15 +86,7 @@ SUPPORTED_MODELS = {
     # May be discontinued at short notice
     # Not recommended for production use
     
-    "sdaia_preview": {
-        "groq/allam-2-7b": {
-            "name": "ALLaM 2 7B (Preview)",
-            "provider": "groq",
-            "context_length": 4096,
-            "is_instruction": True,
-            "is_preview": True
-        }
-    },
+  
     "mistral_preview": {
         "groq/mistral-saba-24b": {
             "name": "Mistral Saba 24B (Preview)",
