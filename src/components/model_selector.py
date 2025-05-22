@@ -70,7 +70,7 @@ class ModelSelector:
             "Max Tokens",
             min_value=1,
             max_value=model_config["context_length"],
-            value=model_config["default_max_tokens"],
+            value=model_config.get("default_max_tokens",4000),
             step=1,
             help="Maximum number of tokens to generate in the response."
         )
