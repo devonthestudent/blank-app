@@ -198,24 +198,7 @@ SUPPORTED_MODELS = {
         }
     },
     "deepseek_preview": {
-        "groq/deepseek-r1-distill-qwen-32b": {
-            "name": "DeepSeek R1 Distill Qwen 32B (Preview)",
-            "provider": "groq",
-            "context_length": 128000,
-            "is_instruction": True,
-            "default_temperature": 0.7,
-            "default_max_tokens": 16384,
-            "is_preview": True
-        },
-        "groq/deepseek-r1-distill-llama-70b-specdec": {
-            "name": "DeepSeek R1 Distill LLaMA 70B SpecDec (Preview)",
-            "provider": "groq",
-            "context_length": 128000,
-            "is_instruction": True,
-            "default_temperature": 0.7,
-            "default_max_tokens": 16384,
-            "is_preview": True
-        },
+       
         "groq/deepseek-r1-distill-llama-70b": {
             "name": "DeepSeek R1 Distill LLaMA 70B (Preview)",
             "provider": "groq",
