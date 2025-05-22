@@ -61,7 +61,7 @@ class ModelSelector:
             "Temperature",
             min_value=0.0,
             max_value=2.0,
-            value=model_config["default_temperature"],
+            value=model_config.get("default_temperature",0.3),
             step=0.1,
             help="Higher values make the output more random, lower values make it more deterministic."
         )
