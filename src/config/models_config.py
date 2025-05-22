@@ -57,18 +57,7 @@ SUPPORTED_MODELS = {
             "is_production": True
         }
     },
-    "openai": {
-        "groq/whisper-large-v3": {
-            "name": "Whisper Large V3",
-            "provider": "groq",
-            "is_production": True
-        },
-        "groq/whisper-large-v3-turbo": {
-            "name": "Whisper Large V3 Turbo",
-            "provider": "groq",
-            "is_production": True
-        }
-    },
+ 
     "huggingface": {
         "groq/distil-whisper-large-v3-en": {
             "name": "Distil Whisper Large V3 EN",
