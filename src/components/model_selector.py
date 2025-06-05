@@ -47,12 +47,8 @@ class ModelSelector:
                 format_func=lambda x: self.gemini_models[x],
                 help="Select a Gemini model"
             )
-            # Find the config for the selected model
-            model_config = None
-            for company, models in SUPPORTED_MODELS.items():
-                if selected_model_id in models:
-                    model_config = models[selected_model_id]
-                    break
+            # Directly get the config for the selected model
+            model_config = SUPPORTED_MODELS["gemini"]["gemini"][selected_model_id]
         else:
             # Company selection
             selected_company = st.sidebar.selectbox(
