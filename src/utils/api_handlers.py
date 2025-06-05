@@ -115,4 +115,4 @@ class APIHandler:
     def get_default_system_prompt(self) -> str:
         """Get the default system prompt for the model type."""
         model_type = "instruction" if self.model_config["is_instruction"] else "completion"
-        return SYSTEM_PROMPTS[model_type] 
+        return SYSTEM_PROMPTS[model_type]       

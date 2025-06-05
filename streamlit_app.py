@@ -79,15 +79,14 @@ with st.sidebar:
     st.subheader("Select API Provider")
     api_provider = st.radio(
         "Choose your API provider:",
-        ["Free (Groq)", "Premium (Replicate)"],
-        help="Select which API provider you want to use. Groq offers free access to preview models, while Replicate provides premium model access."
+        ["Free (Groq)", "Premium (Replicate)", "Google Gemini (Free Tier)"],
+        help="Select which API provider you want to use. Groq offers free access to preview models, Replicate provides premium model access, and Gemini is Google's advanced AI."
     )
 
     # API Key Input based on selection
     st.subheader("API Key Configuration")
     
     if api_provider == "Free (Groq)":
-        # Add toggle for custom Groq API key
         st.session_state.use_custom_groq_key = st.checkbox(
             "Use custom Groq API key",
             value=st.session_state.use_custom_groq_key,
@@ -112,7 +111,7 @@ with st.sidebar:
                 st.error('Default Groq API key not found in secrets!', icon='💫')
                 st.session_state.GROQ_API_KEY = None
 
-    else:  # Premium (Replicate)
+    elif api_provider == "Premium (Replicate)":
         if st.session_state.REPLICATE_API_KEY:
             st.success('Replicate API key already provided!', icon='✨')
         else:
@@ -125,20 +124,45 @@ with st.sidebar:
                 else:
                     st.error('Invalid Replicate API key format. It should start with "r8_" and be 40 characters long.')
 
+    elif api_provider == "Google Gemini (Free Tier)":
+        if 'use_custom_gemini_key' not in st.session_state:
+            st.session_state.use_custom_gemini_key = False
+        st.session_state.use_custom_gemini_key = st.checkbox(
+            "Use custom Gemini API key",
+            value=st.session_state.use_custom_gemini_key,
+            help="Check this box if you want to use your own Gemini API key instead of the default one"
+        )
+        if st.session_state.use_custom_gemini_key:
+            if st.session_state.get("GEMINI_API_KEY") and st.session_state.GEMINI_API_KEY != st.secrets.get("GEMINI_API_KEY", ""):
+                st.success('Custom Gemini API key already provided!', icon='✨')
+            else:
+                gemini_key = st.text_input("Enter your Gemini API Key", type="password")
+                if gemini_key:
+                    st.session_state.GEMINI_API_KEY = gemini_key
+                    os.environ["GEMINI_API_KEY"] = gemini_key
+                    st.success('Custom Gemini API key successfully loaded!', icon='✨')
+        else:
+            if st.secrets.get("GEMINI_API_KEY"):
+                st.success('Using default Gemini API key', icon='✨')
+                st.session_state.GEMINI_API_KEY = st.secrets["GEMINI_API_KEY"]
+                os.environ["GEMINI_API_KEY"] = st.session_state.GEMINI_API_KEY
+            else:
+                st.error('Default Gemini API key not found in secrets!', icon='💫')
+                st.session_state.GEMINI_API_KEY = None
+
     # Only show model selection if API key is provided
     if ((api_provider == "Free (Groq)" and st.session_state.GROQ_API_KEY) or 
-        (api_provider == "Premium (Replicate)" and st.session_state.REPLICATE_API_KEY)):
-        
-        # Initialize model selector
-        model_selector = ModelSelector(api_provider)
-        
-        # Model selection and configuration
+        (api_provider == "Premium (Replicate)" and st.session_state.REPLICATE_API_KEY) or
+        (api_provider == "Google Gemini (Free Tier)" and st.session_state.GEMINI_API_KEY)):
+        # Map Gemini option to correct provider for ModelSelector
+        selector_provider = (
+            "replicate" if api_provider == "Premium (Replicate)" else
+            "gemini" if api_provider == "Google Gemini (Free Tier)" else
+            "groq"
+        )
+        model_selector = ModelSelector(selector_provider)
         model_config = model_selector.render()
-        
-        # Store model configuration in session state
         st.session_state["model_config"] = model_config
-
-        # Render memory settings if model is selected
         if "model_config" in st.session_state:
             chat_interface = ChatInterface(model_config["model_name"])
             chat_interface.memory_manager.render_memory_settings()
