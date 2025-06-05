@@ -198,7 +198,7 @@ SUPPORTED_MODELS = {
         }
     },
     "openrouter": {
-        "deepseek": {
+        "openrouter": {
             "openrouter/deepseek/deepseek-r1-0528:free": {
                 "name": "deepseek-r1-0528",
                 "provider": "openrouter",
@@ -208,8 +208,8 @@ SUPPORTED_MODELS = {
                 "default_max_tokens": 48000,
                 "is_production": True
             },
-            "openrouter/anthropic/claude-instant-v1": {
-                "name": "claude-instant-v1",
+            "openrouter/deepseek/deepseek-r1-0528-qwen3-8b": {
+                "name": "deepseek-r1-0528-qwen3-8b",
                 "provider": "openrouter",
                 "context_length": 131000,
                 "is_instruction": True,
