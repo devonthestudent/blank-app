@@ -83,14 +83,7 @@ class APIHandler:
                     "temperature": temperature,
                     "max_tokens": max_tokens,
                     "stream": stream,
-                }
-                
-                # Add OpenRouter-specific parameters
-                completion_kwargs["extra_body"] = {
-                    "reasoning": {
-                        "effort": "high",
-                        "exclude": False  # Include reasoning in response
-                    }
+                    "reasoning_effort": "high"  # Use LiteLLM's reasoning_effort parameter
                 }
                 
                 response = completion(**completion_kwargs)
@@ -125,8 +118,8 @@ class APIHandler:
                         if hasattr(chunk.choices[0], 'delta'):
                             if hasattr(chunk.choices[0].delta, 'content'):
                                 content = chunk.choices[0].delta.content
-                            if hasattr(chunk.choices[0].delta, 'reasoning'):
-                                reasoning = chunk.choices[0].delta.reasoning
+                            if hasattr(chunk.choices[0].delta, 'reasoning_content'):
+                                reasoning = chunk.choices[0].delta.reasoning_content
                         elif hasattr(chunk.choices[0], 'text'):
                             content = chunk.choices[0].text
                         elif hasattr(chunk.choices[0], 'content'):
@@ -135,7 +128,7 @@ class APIHandler:
                         if 'choices' in chunk:
                             if 'delta' in chunk['choices'][0]:
                                 content = chunk['choices'][0]['delta'].get('content', '')
-                                reasoning = chunk['choices'][0]['delta'].get('reasoning', '')
+                                reasoning = chunk['choices'][0]['delta'].get('reasoning_content', '')
                             elif 'text' in chunk['choices'][0]:
                                 content = chunk['choices'][0]['text']
                             elif 'content' in chunk['choices'][0]:
