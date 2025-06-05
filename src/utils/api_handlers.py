@@ -118,6 +118,7 @@ class APIHandler:
                     # Handle different response formats
                     content = None
                     reasoning = None
+                    thinking_blocks = None
                     
                     # Extract content and reasoning from different response formats
                     if hasattr(chunk, 'choices') and chunk.choices:
@@ -126,6 +127,8 @@ class APIHandler:
                                 content = chunk.choices[0].delta.content
                             if hasattr(chunk.choices[0].delta, 'reasoning_content'):
                                 reasoning = chunk.choices[0].delta.reasoning_content
+                            if hasattr(chunk.choices[0].delta, 'thinking_blocks'):
+                                thinking_blocks = chunk.choices[0].delta.thinking_blocks
                         elif hasattr(chunk.choices[0], 'text'):
                             content = chunk.choices[0].text
                         elif hasattr(chunk.choices[0], 'content'):
@@ -135,6 +138,7 @@ class APIHandler:
                             if 'delta' in chunk['choices'][0]:
                                 content = chunk['choices'][0]['delta'].get('content', '')
                                 reasoning = chunk['choices'][0]['delta'].get('reasoning_content', '')
+                                thinking_blocks = chunk['choices'][0]['delta'].get('thinking_blocks', [])
                             elif 'text' in chunk['choices'][0]:
                                 content = chunk['choices'][0]['text']
                             elif 'content' in chunk['choices'][0]:
@@ -146,13 +150,14 @@ class APIHandler:
                     elif hasattr(chunk, 'content'):
                         content = chunk.content
 
-                    # If we have any content or reasoning, yield it
-                    if content or reasoning:
+                    # If we have any content, reasoning, or thinking blocks, yield it
+                    if content or reasoning or thinking_blocks:
                         yield {
                             "choices": [{
                                 "delta": {
                                     "content": content if content else "",
-                                    "reasoning": reasoning if reasoning else ""
+                                    "reasoning": reasoning if reasoning else "",
+                                    "thinking_blocks": thinking_blocks if thinking_blocks else []
                                 }
                             }]
                         }
