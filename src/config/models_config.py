@@ -208,7 +208,7 @@ SUPPORTED_MODELS = {
                 "default_max_tokens": 48000,
                 "is_production": True
             },
-            "openrouter/deepseek/deepseek-r1-0528-qwen3-8b": {
+            "deepseek/deepseek-r1-0528-qwen3-8b": {
                 "name": "deepseek-r1-0528-qwen3-8b",
                 "provider": "openrouter",
                 "context_length": 131000,
