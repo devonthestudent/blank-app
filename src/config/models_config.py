@@ -176,6 +176,17 @@ SUPPORTED_MODELS = {
             "default_temperature": 0.7,
             "default_max_tokens": 4000,
         }
+    },
+    "gemini": {
+        "gemini/gemini-pro": {
+            "name": "Gemini Pro",
+            "provider": "gemini",
+            "context_length": 8192,
+            "is_instruction": True,
+            "default_temperature": 0.7,
+            "default_max_tokens": 4000,
+            "is_production": True
+        }
     }
 }
 
@@ -215,6 +226,20 @@ PROMPT_TEMPLATES = {
         "assistant": {
             "pre_message": "",
             "post_message": "\n"
+        }
+    },
+    "gemini": {
+        "system": {
+            "pre_message": "",
+            "post_message": "\n\n"
+        },
+        "user": {
+            "pre_message": "User: ",
+            "post_message": "\n\n"
+        },
+        "assistant": {
+            "pre_message": "Assistant: ",
+            "post_message": "\n\n"
         }
     }
 } 

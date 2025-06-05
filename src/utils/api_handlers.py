@@ -26,6 +26,9 @@ class APIHandler:
         elif self.provider == "replicate":
             if "REPLICATE_API_KEY" not in os.environ:
                 raise ValueError("REPLICATE_API_KEY environment variable not set")
+        elif self.provider == "gemini":
+            if "GEMINI_API_KEY" not in os.environ:
+                raise ValueError("GEMINI_API_KEY environment variable not set")
 
     def _format_messages(self, messages: List[Dict[str, str]], system_prompt: str = None) -> List[Dict[str, str]]:
         """Format messages according to the model's template."""
