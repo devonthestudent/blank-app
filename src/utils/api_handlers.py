@@ -83,7 +83,13 @@ class APIHandler:
                     "temperature": temperature,
                     "max_tokens": max_tokens,
                     "stream": stream,
-                    "reasoning_effort": "high"  # Use LiteLLM's reasoning_effort parameter
+                    "drop_params": True,  # Drop unsupported parameters
+                    "extra_body": {
+                        "reasoning": {
+                            "effort": "high",
+                            "exclude": False
+                        }
+                    }
                 }
                 
                 response = completion(**completion_kwargs)
