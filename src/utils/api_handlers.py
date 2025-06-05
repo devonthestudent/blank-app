@@ -12,10 +12,11 @@ class APIHandler:
 
     def _get_model_config(self) -> Dict[str, Any]:
         """Get the configuration for the current model."""
-        for provider, models in SUPPORTED_MODELS.items():
-            for model_id, config in models.items():
-                if model_id in self.model_name:
-                    return config
+        for provider, companies in SUPPORTED_MODELS.items():
+            for company, models in companies.items():
+                for model_id, config in models.items():
+                    if model_id == self.model_name:
+                        return config
         raise ValueError(f"Model {self.model_name} not found in configuration")
 
     def _setup_api_keys(self):
