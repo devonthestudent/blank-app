@@ -133,20 +133,24 @@ class APIHandler:
                                 thinking_blocks = chunk.choices[0].delta.thinking_blocks
                             # Get original content if available
                             if hasattr(chunk.choices[0].delta, 'provider_specific_fields'):
-                                original_content = chunk.choices[0].delta.provider_specific_fields.get('original_content')
+                                provider_fields = chunk.choices[0].delta.provider_specific_fields
+                                if provider_fields is not None:
+                                    original_content = provider_fields.get('original_content')
                         elif hasattr(chunk.choices[0], 'text'):
                             content = chunk.choices[0].text
                         elif hasattr(chunk.choices[0], 'content'):
                             content = chunk.choices[0].content
                     elif isinstance(chunk, dict):
-                        if 'choices' in chunk:
+                        if 'choices' in chunk and chunk['choices']:
                             if 'delta' in chunk['choices'][0]:
-                                content = chunk['choices'][0]['delta'].get('content', '')
-                                reasoning = chunk['choices'][0]['delta'].get('reasoning_content', '')
-                                thinking_blocks = chunk['choices'][0]['delta'].get('thinking_blocks', [])
+                                delta = chunk['choices'][0]['delta']
+                                content = delta.get('content', '')
+                                reasoning = delta.get('reasoning_content', '')
+                                thinking_blocks = delta.get('thinking_blocks', [])
                                 # Get original content if available
-                                if 'provider_specific_fields' in chunk['choices'][0]['delta']:
-                                    original_content = chunk['choices'][0]['delta']['provider_specific_fields'].get('original_content')
+                                provider_fields = delta.get('provider_specific_fields')
+                                if provider_fields is not None:
+                                    original_content = provider_fields.get('original_content')
                             elif 'text' in chunk['choices'][0]:
                                 content = chunk['choices'][0]['text']
                             elif 'content' in chunk['choices'][0]:
