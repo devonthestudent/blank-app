@@ -85,11 +85,11 @@ class APIHandler:
                     "max_tokens": max_tokens,
                     "stream": stream,
                     "drop_params": True,  # Drop unsupported parameters
-                    "merge_reasoning_content_in_choices": True,  # Keep original content structure
                     "extra_body": {
                         "reasoning": {
                             "effort": "high",
-                            "exclude": False
+                            "exclude": False,
+                            "format": "markdown"  # Request reasoning in markdown format
                         }
                     }
                 }
@@ -125,7 +125,6 @@ class APIHandler:
                     content = None
                     reasoning = None
                     thinking_blocks = None
-                    original_content = None
                     
                     # Extract content and reasoning from different response formats
                     if hasattr(chunk, 'choices') and chunk.choices:
@@ -141,13 +140,14 @@ class APIHandler:
                             if hasattr(chunk.choices[0].delta, 'thinking_blocks'):
                                 thinking_blocks = chunk.choices[0].delta.thinking_blocks
                                 st.write("Debug - Thinking Blocks:", thinking_blocks)
-                            # Get original content if available
+                            # Check for reasoning in provider_specific_fields
                             if hasattr(chunk.choices[0].delta, 'provider_specific_fields'):
                                 provider_fields = chunk.choices[0].delta.provider_specific_fields
                                 st.write("Debug - Provider Fields:", provider_fields)
                                 if provider_fields is not None:
-                                    original_content = provider_fields.get('original_content')
-                                    st.write("Debug - Original Content:", original_content)
+                                    if isinstance(provider_fields, dict):
+                                        reasoning = provider_fields.get('reasoning_content', '')
+                                        st.write("Debug - Reasoning from provider fields:", reasoning)
                         elif hasattr(chunk.choices[0], 'text'):
                             content = chunk.choices[0].text
                             st.write("Debug - Text Content:", content)
@@ -168,11 +168,12 @@ class APIHandler:
                                     "reasoning": reasoning,
                                     "thinking_blocks": thinking_blocks
                                 })
-                                # Get original content if available
+                                # Check for reasoning in provider_specific_fields
                                 provider_fields = delta.get('provider_specific_fields')
                                 if provider_fields is not None:
-                                    original_content = provider_fields.get('original_content')
-                                    st.write("Debug - Original Content from dict:", original_content)
+                                    if isinstance(provider_fields, dict):
+                                        reasoning = provider_fields.get('reasoning_content', '')
+                                        st.write("Debug - Reasoning from provider fields:", reasoning)
                             elif 'text' in chunk['choices'][0]:
                                 content = chunk['choices'][0]['text']
                                 st.write("Debug - Text Content from dict:", content)
@@ -190,16 +191,13 @@ class APIHandler:
                         st.write("Debug - Object Content:", content)
 
                     # If we have any content, reasoning, or thinking blocks, yield it
-                    if content or reasoning or thinking_blocks or original_content:
+                    if content or reasoning or thinking_blocks:
                         response_data = {
                             "choices": [{
                                 "delta": {
-                                    "content": original_content if original_content else content if content else "",
+                                    "content": content if content else "",
                                     "reasoning": reasoning if reasoning else "",
-                                    "thinking_blocks": thinking_blocks if thinking_blocks else [],
-                                    "provider_specific_fields": {
-                                        "original_content": original_content if original_content else None
-                                    }
+                                    "thinking_blocks": thinking_blocks if thinking_blocks else []
                                 }
                             }]
                         }
