@@ -69,7 +69,7 @@ class ModelSelector:
                 help=f"Select a specific model from {selected_company.capitalize()}"
             )
             # Get model configuration
-            model_config = SUPPORTED_MODELS[selected_company][selected_model_id]
+            model_config = SUPPORTED_MODELS[self.provider][selected_company][selected_model_id]
 
         # Display model information
         st.sidebar.markdown(f"""
