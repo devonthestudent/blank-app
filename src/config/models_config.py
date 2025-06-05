@@ -207,6 +207,15 @@ SUPPORTED_MODELS = {
                 "default_temperature": 0.5,
                 "default_max_tokens": 48000,
                 "is_production": True
+            },
+            "deepseek/deepseek-r1-0528-qwen3-8b": {
+                "name": "deepseek-r1-0528-qwen3-8b",
+                "provider": "openrouter",
+                "context_length": 131000,
+                "is_instruction": True,
+                "default_temperature": 0.5,
+                "default_max_tokens": 48000,
+                "is_production": True
             }
         },
         "system": {
