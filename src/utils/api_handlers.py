@@ -76,17 +76,24 @@ class APIHandler:
         try:
             # Add specific configuration for OpenRouter
             if self.provider == "openrouter":
-                response = completion(
-                    model=self.model_name,
-                    messages=formatted_messages,
-                    temperature=temperature,
-                    max_tokens=max_tokens,
-                    stream=stream,
-                    reasoning={
-                        "effort": "high",  # Use high reasoning effort
-                        "exclude": False   # Include reasoning in response
+                # Create the completion request with OpenRouter-specific parameters
+                completion_kwargs = {
+                    "model": self.model_name,
+                    "messages": formatted_messages,
+                    "temperature": temperature,
+                    "max_tokens": max_tokens,
+                    "stream": stream,
+                }
+                
+                # Add OpenRouter-specific parameters
+                completion_kwargs["extra_body"] = {
+                    "reasoning": {
+                        "effort": "high",
+                        "exclude": False  # Include reasoning in response
                     }
-                )
+                }
+                
+                response = completion(**completion_kwargs)
             # Add specific configuration for Replicate
             elif self.provider == "replicate":
                 response = completion(
