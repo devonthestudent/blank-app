@@ -188,7 +188,7 @@ SUPPORTED_MODELS = {
     "openrouter": {
         "deepseek": {
             "openrouter/deepseek/deepseek-r1-0528:free": {
-                "name": "deepseek/deepseek-r1-0528",
+                "name": "deepseek-r1-0528",
                 "provider": "openrouter",
                 "context_length": 164000,
                 "is_instruction": True,
