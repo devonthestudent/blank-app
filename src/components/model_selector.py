@@ -18,17 +18,17 @@ class ModelSelector:
             # Filter companies based on provider
             self.companies = [
                 company for company, models in SUPPORTED_MODELS[self.provider].items()
-                if any(isinstance(config, dict) and config.get("provider") == self.provider for config in models.values())
+                if any(isinstance(config, dict) for config in models.values())
             ]
-            # Filter models by provider
+            # Filter models by company (include all dicts)
             self.models_by_company = {
                 company: {
                     model_id: config["name"]
                     for model_id, config in models.items()
-                    if isinstance(config, dict) and config.get("provider") == self.provider
+                    if isinstance(config, dict)
                 }
                 for company, models in SUPPORTED_MODELS[self.provider].items()
-                if any(isinstance(config, dict) and config.get("provider") == self.provider for config in models.values())
+                if any(isinstance(config, dict) for config in models.values())
             }
 
     def render(self) -> Dict[str, Any]:
