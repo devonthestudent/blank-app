@@ -17,25 +17,24 @@ class ModelSelector:
             # Flatten all gemini models into a single dict, show name and model_id for uniqueness
             self.gemini_models = {
                 model_id: f"{config['name']} ({model_id})"
-                for company, models in SUPPORTED_MODELS.items()
-                for model_id, config in models.items()
-                if config["provider"] == "gemini"
+                for model_id, config in SUPPORTED_MODELS["gemini"]["gemini"].items()
+                if config.get("provider") == "gemini"
             }
         else:
             # Filter companies based on provider
             self.companies = [
-                company for company, models in SUPPORTED_MODELS.items()
-                if any(model["provider"] == self.provider for model in models.values())
+                company for company, models in SUPPORTED_MODELS[self.provider].items()
+                if any(config.get("provider") == self.provider for config in models.values())
             ]
             # Filter models by provider
             self.models_by_company = {
                 company: {
                     model_id: config["name"]
                     for model_id, config in models.items()
-                    if config["provider"] == self.provider
+                    if config.get("provider") == self.provider
                 }
-                for company, models in SUPPORTED_MODELS.items()
-                if any(model["provider"] == self.provider for model in models.values())
+                for company, models in SUPPORTED_MODELS[self.provider].items()
+                if any(config.get("provider") == self.provider for config in models.values())
             }
 
     def render(self) -> Dict[str, Any]:
