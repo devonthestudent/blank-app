@@ -209,7 +209,7 @@ SUPPORTED_MODELS = {
                 "is_production": True,
                 "model_type": "deepseek_r1"
             },
-            "openrouter/deepseek/deepseek-r1-0528-qwen3-8b": {
+            "openrouter/deepseek/deepseek-r1-0528-qwen3-8basd:free": {
                 "name": "deepseek-r1-0528-qwen3-8b",
                 "provider": "openrouter",
                 "context_length": 131000,
