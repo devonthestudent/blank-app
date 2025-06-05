@@ -104,8 +104,13 @@ class ChatInterface:
                                 content = chunk['choices'][0]['text']
                             elif 'message' in chunk['choices'][0]:
                                 content = chunk['choices'][0]['message'].get('content', '')
+                            # Add support for Replicate's response format
+                            elif 'content' in chunk['choices'][0]:
+                                content = chunk['choices'][0]['content']
                         elif isinstance(chunk, str):
                             content = chunk
+                        elif hasattr(chunk, 'content'):
+                            content = chunk.content
 
                         if content:
                             has_received_content = True
