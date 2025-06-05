@@ -183,6 +183,18 @@ SUPPORTED_MODELS = {
                 "default_max_tokens": 4000,
                 "is_production": True
             }
+        },
+        "system": {
+            "pre_message": "",
+            "post_message": "\n\n"
+        },
+        "user": {
+            "pre_message": "User: ",
+            "post_message": "\n\n"
+        },
+        "assistant": {
+            "pre_message": "Assistant: ",
+            "post_message": "\n\n"
         }
     },
     "openrouter": {
@@ -196,6 +208,18 @@ SUPPORTED_MODELS = {
                 "default_max_tokens": 48000,
                 "is_production": True
             }
+        },
+        "system": {
+            "pre_message": "",
+            "post_message": "\n\n"
+        },
+        "user": {
+            "pre_message": "User: ",
+            "post_message": "\n\n"
+        },
+        "assistant": {
+            "pre_message": "Assistant: ",
+            "post_message": "\n\n"
         }
     }
 }
