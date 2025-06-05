@@ -160,6 +160,7 @@ with st.sidebar:
             "gemini" if api_provider == "Google Gemini (Free Tier)" else
             "groq"
         )
+        st.write("api_provider:", api_provider, "selector_provider:", selector_provider)
         model_selector = ModelSelector(selector_provider)
         model_config = model_selector.render()
         st.session_state["model_config"] = model_config
