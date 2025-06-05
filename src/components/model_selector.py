@@ -48,16 +48,25 @@ class ModelSelector:
                 st.warning("No companies found for the selected provider.")
                 return {}
             # Company selection
+            default_company = self.companies[0] if len(self.companies) == 1 else None
             selected_company = st.sidebar.selectbox(
                 "Select Company",
                 self.companies,
+                index=0 if default_company else 0,
                 format_func=lambda x: x.capitalize(),
                 help="Select the AI company whose models you want to use"
             )
+            if selected_company is None:
+                st.warning("No company selected.")
+                return {}
             # Model selection based on company
+            model_keys = list(self.models_by_company[selected_company].keys())
+            if not model_keys:
+                st.warning("No models found for the selected company.")
+                return {}
             selected_model_id = st.sidebar.selectbox(
                 "Select Model",
-                list(self.models_by_company[selected_company].keys()),
+                model_keys,
                 format_func=lambda x: self.models_by_company[selected_company][x],
                 help=f"Select a specific model from {selected_company.capitalize()}"
             )
