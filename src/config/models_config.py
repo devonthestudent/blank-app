@@ -168,7 +168,7 @@ SUPPORTED_MODELS = {
             "gemini/gemini-2.5-flash-preview-05-20": {
                 "name": "Gemini Pro",
                 "provider": "gemini",
-                "context_length": 8192,
+                "context_length":128000,
                 "is_instruction": True,
                 "default_temperature": 0.5,
                 "default_max_tokens": 48000,
@@ -177,7 +177,7 @@ SUPPORTED_MODELS = {
             "gemini/gemini-pro": {
                 "name": "Gemini Pro",
                 "provider": "gemini",
-                "context_length": 8192,
+                "context_length": 128000,
                 "is_instruction": True,
                 "default_temperature": 0.7,
                 "default_max_tokens": 4000,
