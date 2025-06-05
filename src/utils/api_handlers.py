@@ -84,6 +84,7 @@ class APIHandler:
                     "max_tokens": max_tokens,
                     "stream": stream,
                     "drop_params": True,  # Drop unsupported parameters
+                    "merge_reasoning_content_in_choices": True,  # Keep original content structure
                     "extra_body": {
                         "reasoning": {
                             "effort": "high",
@@ -119,6 +120,7 @@ class APIHandler:
                     content = None
                     reasoning = None
                     thinking_blocks = None
+                    original_content = None
                     
                     # Extract content and reasoning from different response formats
                     if hasattr(chunk, 'choices') and chunk.choices:
@@ -129,6 +131,9 @@ class APIHandler:
                                 reasoning = chunk.choices[0].delta.reasoning_content
                             if hasattr(chunk.choices[0].delta, 'thinking_blocks'):
                                 thinking_blocks = chunk.choices[0].delta.thinking_blocks
+                            # Get original content if available
+                            if hasattr(chunk.choices[0].delta, 'provider_specific_fields'):
+                                original_content = chunk.choices[0].delta.provider_specific_fields.get('original_content')
                         elif hasattr(chunk.choices[0], 'text'):
                             content = chunk.choices[0].text
                         elif hasattr(chunk.choices[0], 'content'):
@@ -139,6 +144,9 @@ class APIHandler:
                                 content = chunk['choices'][0]['delta'].get('content', '')
                                 reasoning = chunk['choices'][0]['delta'].get('reasoning_content', '')
                                 thinking_blocks = chunk['choices'][0]['delta'].get('thinking_blocks', [])
+                                # Get original content if available
+                                if 'provider_specific_fields' in chunk['choices'][0]['delta']:
+                                    original_content = chunk['choices'][0]['delta']['provider_specific_fields'].get('original_content')
                             elif 'text' in chunk['choices'][0]:
                                 content = chunk['choices'][0]['text']
                             elif 'content' in chunk['choices'][0]:
@@ -151,13 +159,16 @@ class APIHandler:
                         content = chunk.content
 
                     # If we have any content, reasoning, or thinking blocks, yield it
-                    if content or reasoning or thinking_blocks:
+                    if content or reasoning or thinking_blocks or original_content:
                         yield {
                             "choices": [{
                                 "delta": {
-                                    "content": content if content else "",
+                                    "content": original_content if original_content else content if content else "",
                                     "reasoning": reasoning if reasoning else "",
-                                    "thinking_blocks": thinking_blocks if thinking_blocks else []
+                                    "thinking_blocks": thinking_blocks if thinking_blocks else [],
+                                    "provider_specific_fields": {
+                                        "original_content": original_content if original_content else None
+                                    }
                                 }
                             }]
                         }
