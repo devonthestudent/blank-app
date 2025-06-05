@@ -67,6 +67,10 @@ class APIHandler:
         if max_tokens is None:
             max_tokens = self.model_config["default_max_tokens"]
 
+        # Use model-specific system prompt if available
+        if system_prompt is None and "model_type" in self.model_config:
+            system_prompt = self.get_default_system_prompt()
+
         formatted_messages = self._format_messages(messages, system_prompt)
 
         try:
@@ -141,5 +145,7 @@ class APIHandler:
 
     def get_default_system_prompt(self) -> str:
         """Get the default system prompt for the model type."""
+        if "model_type" in self.model_config:
+            return SYSTEM_PROMPTS[self.model_config["model_type"]]
         model_type = "instruction" if self.model_config["is_instruction"] else "completion"
         return SYSTEM_PROMPTS[model_type]       

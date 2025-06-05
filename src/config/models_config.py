@@ -206,7 +206,8 @@ SUPPORTED_MODELS = {
                 "is_instruction": True,
                 "default_temperature": 0.5,
                 "default_max_tokens": 48000,
-                "is_production": True
+                "is_production": True,
+                "model_type": "deepseek_r1"
             },
             "openrouter/deepseek/deepseek-r1-0528-qwen3-8b": {
                 "name": "deepseek-r1-0528-qwen3-8b",
@@ -215,7 +216,8 @@ SUPPORTED_MODELS = {
                 "is_instruction": True,
                 "default_temperature": 0.5,
                 "default_max_tokens": 48000,
-                "is_production": True
+                "is_production": True,
+                "model_type": "deepseek_r1"
             }
         }
     }
@@ -226,7 +228,10 @@ SYSTEM_PROMPTS = {
     "instruction": """You are a helpful AI assistant. You aim to provide accurate, helpful, and safe responses.
     Always be direct and concise in your answers. If you're not sure about something, say so.""",
     "completion": """You are a helpful AI assistant that completes text in a natural and coherent way.
-    Your completions should be contextually appropriate and maintain the style of the input text."""
+    Your completions should be contextually appropriate and maintain the style of the input text.""",
+    "deepseek_r1": """You are DeepSeek-R1, a helpful AI assistant. You aim to provide accurate, helpful, and safe responses.
+    Always be direct and concise in your answers. If you're not sure about something, say so.
+    When solving complex problems, first think through your approach step by step, then provide your final answer."""
 }
 
 # Model-specific prompt templates
