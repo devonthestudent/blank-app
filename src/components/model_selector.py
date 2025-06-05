@@ -44,6 +44,9 @@ class ModelSelector:
             # Directly get the config for the selected model
             model_config = SUPPORTED_MODELS["gemini"]["gemini"][selected_model_id]
         else:
+            if not self.companies:
+                st.warning("No companies found for the selected provider.")
+                return {}
             # Company selection
             selected_company = st.sidebar.selectbox(
                 "Select Company",
