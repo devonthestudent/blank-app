@@ -74,8 +74,21 @@ class APIHandler:
         formatted_messages = self._format_messages(messages, system_prompt)
 
         try:
+            # Add specific configuration for OpenRouter
+            if self.provider == "openrouter":
+                response = completion(
+                    model=self.model_name,
+                    messages=formatted_messages,
+                    temperature=temperature,
+                    max_tokens=max_tokens,
+                    stream=stream,
+                    reasoning={
+                        "effort": "high",  # Use high reasoning effort
+                        "exclude": False   # Include reasoning in response
+                    }
+                )
             # Add specific configuration for Replicate
-            if self.provider == "replicate":
+            elif self.provider == "replicate":
                 response = completion(
                     model=self.model_name,
                     messages=formatted_messages,
@@ -98,11 +111,15 @@ class APIHandler:
                 for chunk in response:
                     # Handle different response formats
                     content = None
+                    reasoning = None
                     
-                    # Extract content from different response formats
+                    # Extract content and reasoning from different response formats
                     if hasattr(chunk, 'choices') and chunk.choices:
-                        if hasattr(chunk.choices[0], 'delta') and hasattr(chunk.choices[0].delta, 'content'):
-                            content = chunk.choices[0].delta.content
+                        if hasattr(chunk.choices[0], 'delta'):
+                            if hasattr(chunk.choices[0].delta, 'content'):
+                                content = chunk.choices[0].delta.content
+                            if hasattr(chunk.choices[0].delta, 'reasoning'):
+                                reasoning = chunk.choices[0].delta.reasoning
                         elif hasattr(chunk.choices[0], 'text'):
                             content = chunk.choices[0].text
                         elif hasattr(chunk.choices[0], 'content'):
@@ -111,6 +128,7 @@ class APIHandler:
                         if 'choices' in chunk:
                             if 'delta' in chunk['choices'][0]:
                                 content = chunk['choices'][0]['delta'].get('content', '')
+                                reasoning = chunk['choices'][0]['delta'].get('reasoning', '')
                             elif 'text' in chunk['choices'][0]:
                                 content = chunk['choices'][0]['text']
                             elif 'content' in chunk['choices'][0]:
@@ -122,11 +140,14 @@ class APIHandler:
                     elif hasattr(chunk, 'content'):
                         content = chunk.content
 
-                    # If we have any content, yield it
-                    if content:
+                    # If we have any content or reasoning, yield it
+                    if content or reasoning:
                         yield {
                             "choices": [{
-                                "delta": {"content": content}
+                                "delta": {
+                                    "content": content if content else "",
+                                    "reasoning": reasoning if reasoning else ""
+                                }
                             }]
                         }
             else:

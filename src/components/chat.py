@@ -97,16 +97,20 @@ class ChatInterface:
                     ):
                         # Extract content from different response formats
                         content = None
+                        reasoning = None
                         if isinstance(chunk, dict):
                             if 'choices' in chunk:
                                 if 'delta' in chunk['choices'][0]:
                                     content = chunk['choices'][0]['delta'].get('content', '')
-                                elif 'text' in chunk['choices'][0]:
-                                    content = chunk['choices'][0]['text']
-                                elif 'message' in chunk['choices'][0]:
-                                    content = chunk['choices'][0]['message'].get('content', '')
-                                elif 'content' in chunk['choices'][0]:
-                                    content = chunk['choices'][0]['content']
+                                    reasoning = chunk['choices'][0]['delta'].get('reasoning', '')
+                                    if 'text' in chunk['choices'][0]:
+                                        content = chunk['choices'][0]['text']
+                                    elif 'message' in chunk['choices'][0]:
+                                        content = chunk['choices'][0]['message'].get('content', '')
+                                    elif 'content' in chunk['choices'][0]:
+                                        content = chunk['choices'][0]['content']
+                                elif 'content' in chunk:
+                                    content = chunk['content']
                             elif 'content' in chunk:
                                 content = chunk['content']
                         elif isinstance(chunk, str):
@@ -114,10 +118,25 @@ class ChatInterface:
                         elif hasattr(chunk, 'content'):
                             content = chunk.content
 
-                        if content:
+                        if content or reasoning:
                             has_received_content = True
+                            if reasoning:
+                                full_response += f"\n\nReasoning:\n{reasoning}\n\nResponse:\n"
                             full_response += content
                             displayed_response += content
+                            
+                            # Display reasoning if available
+                            if reasoning:
+                                with thinking_container:
+                                    st.markdown(f"""
+                                    <div style='background-color: #f0f2f6; padding: 1rem; border-radius: 0.5rem; margin: 0.5rem 0;'>
+                                        <div style='color: #666; font-style: italic;'>
+                                            {reasoning}
+                                        </div>
+                                    </div>
+                                    """, unsafe_allow_html=True)
+                            
+                            # Display the response
                             response_container.markdown(
                                 displayed_response,
                                 unsafe_allow_html=True
