@@ -2,6 +2,7 @@ from typing import List, Dict, Any, Generator
 import os
 from litellm import completion
 from ..config.models_config import SUPPORTED_MODELS, PROMPT_TEMPLATES, SYSTEM_PROMPTS
+import streamlit as st  # Add this at the top with other imports
 
 class APIHandler:
     def __init__(self, model_name: str):
@@ -93,6 +94,7 @@ class APIHandler:
                     }
                 }
                 
+                st.write("Debug - OpenRouter Request:", completion_kwargs)
                 response = completion(**completion_kwargs)
             # Add specific configuration for Replicate
             elif self.provider == "replicate":
@@ -116,6 +118,9 @@ class APIHandler:
 
             if stream:
                 for chunk in response:
+                    # Debug logging for raw chunk
+                    st.write("Debug - Raw Chunk:", chunk)
+                    
                     # Handle different response formats
                     content = None
                     reasoning = None
@@ -124,47 +129,69 @@ class APIHandler:
                     
                     # Extract content and reasoning from different response formats
                     if hasattr(chunk, 'choices') and chunk.choices:
+                        st.write("Debug - Chunk has choices")
                         if hasattr(chunk.choices[0], 'delta'):
+                            st.write("Debug - Chunk has delta")
                             if hasattr(chunk.choices[0].delta, 'content'):
                                 content = chunk.choices[0].delta.content
+                                st.write("Debug - Content:", content)
                             if hasattr(chunk.choices[0].delta, 'reasoning_content'):
                                 reasoning = chunk.choices[0].delta.reasoning_content
+                                st.write("Debug - Reasoning:", reasoning)
                             if hasattr(chunk.choices[0].delta, 'thinking_blocks'):
                                 thinking_blocks = chunk.choices[0].delta.thinking_blocks
+                                st.write("Debug - Thinking Blocks:", thinking_blocks)
                             # Get original content if available
                             if hasattr(chunk.choices[0].delta, 'provider_specific_fields'):
                                 provider_fields = chunk.choices[0].delta.provider_specific_fields
+                                st.write("Debug - Provider Fields:", provider_fields)
                                 if provider_fields is not None:
                                     original_content = provider_fields.get('original_content')
+                                    st.write("Debug - Original Content:", original_content)
                         elif hasattr(chunk.choices[0], 'text'):
                             content = chunk.choices[0].text
+                            st.write("Debug - Text Content:", content)
                         elif hasattr(chunk.choices[0], 'content'):
                             content = chunk.choices[0].content
+                            st.write("Debug - Content:", content)
                     elif isinstance(chunk, dict):
+                        st.write("Debug - Chunk is dict:", chunk)
                         if 'choices' in chunk and chunk['choices']:
                             if 'delta' in chunk['choices'][0]:
                                 delta = chunk['choices'][0]['delta']
+                                st.write("Debug - Delta:", delta)
                                 content = delta.get('content', '')
                                 reasoning = delta.get('reasoning_content', '')
                                 thinking_blocks = delta.get('thinking_blocks', [])
+                                st.write("Debug - Extracted from delta:", {
+                                    "content": content,
+                                    "reasoning": reasoning,
+                                    "thinking_blocks": thinking_blocks
+                                })
                                 # Get original content if available
                                 provider_fields = delta.get('provider_specific_fields')
                                 if provider_fields is not None:
                                     original_content = provider_fields.get('original_content')
+                                    st.write("Debug - Original Content from dict:", original_content)
                             elif 'text' in chunk['choices'][0]:
                                 content = chunk['choices'][0]['text']
+                                st.write("Debug - Text Content from dict:", content)
                             elif 'content' in chunk['choices'][0]:
                                 content = chunk['choices'][0]['content']
+                                st.write("Debug - Content from dict:", content)
                         elif 'content' in chunk:
                             content = chunk['content']
+                            st.write("Debug - Direct Content from dict:", content)
                     elif isinstance(chunk, str):
                         content = chunk.strip()
+                        st.write("Debug - String Content:", content)
                     elif hasattr(chunk, 'content'):
                         content = chunk.content
+                        st.write("Debug - Object Content:", content)
 
                     # If we have any content, reasoning, or thinking blocks, yield it
                     if content or reasoning or thinking_blocks or original_content:
-                        yield {
+                        response_data = {
                             "choices": [{
                                 "delta": {
                                     "content": original_content if original_content else content if content else "",
@@ -176,6 +203,8 @@ class APIHandler:
                                 }
                             }]
                         }
+                        st.write("Debug - Final Response Data:", response_data)
+                        yield response_data
             else:
                 if hasattr(response, 'choices') and response.choices:
                     yield response
