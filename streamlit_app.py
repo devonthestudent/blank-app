@@ -79,8 +79,13 @@ with st.sidebar:
     st.subheader("Select API Provider")
     api_provider = st.radio(
         "Choose your API provider:",
-        ["Free (Groq)", "Premium (Replicate)", "Google Gemini (Free Tier)"],
-        help="Select which API provider you want to use. Groq offers free access to preview models, Replicate provides premium model access, and Gemini is Google's advanced AI."
+        [
+            "Free (Groq)",
+            "Premium (Replicate)",
+            "Google Gemini (Free Tier)",
+            "OpenRouter"
+        ],
+        help="Select which API provider you want to use. Groq offers free access to preview models, Replicate provides premium model access, Gemini is Google's advanced AI, and OpenRouter is a new provider."
     )
 
     # API Key Input based on selection
@@ -150,14 +155,42 @@ with st.sidebar:
                 st.error('Default Gemini API key not found in secrets!', icon='💫')
                 st.session_state.GEMINI_API_KEY = None
 
+    elif api_provider == "OpenRouter":
+        if 'use_custom_openrouter_key' not in st.session_state:
+            st.session_state.use_custom_openrouter_key = False
+        st.session_state.use_custom_openrouter_key = st.checkbox(
+            "Use custom OpenRouter API key",
+            value=st.session_state.use_custom_openrouter_key,
+            help="Check this box if you want to use your own OpenRouter API key instead of the default one"
+        )
+        if st.session_state.use_custom_openrouter_key:
+            if st.session_state.get("OPENROUTER_API_KEY") and st.session_state.OPENROUTER_API_KEY != st.secrets.get("OPENROUTER_API_KEY", ""):
+                st.success('Custom OpenRouter API key already provided!', icon='✨')
+            else:
+                openrouter_key = st.text_input("Enter OpenRouter API Key", type="password")
+                if openrouter_key:
+                    st.session_state.OPENROUTER_API_KEY = openrouter_key
+                    os.environ["OPENROUTER_API_KEY"] = openrouter_key
+                    st.success('OpenRouter API key successfully loaded!', icon='✨')
+        else:
+            if st.secrets.get("OPENROUTER_API_KEY"):
+                st.success('Using default OpenRouter API key', icon='✨')
+                st.session_state.OPENROUTER_API_KEY = st.secrets["OPENROUTER_API_KEY"]
+                os.environ["OPENROUTER_API_KEY"] = st.session_state.OPENROUTER_API_KEY
+            else:
+                st.error('Default OpenRouter API key not found in secrets!', icon='💫')
+                st.session_state.OPENROUTER_API_KEY = None
+
     # Only show model selection if API key is provided
     if ((api_provider == "Free (Groq)" and st.session_state.GROQ_API_KEY) or 
         (api_provider == "Premium (Replicate)" and st.session_state.REPLICATE_API_KEY) or
-        (api_provider == "Google Gemini (Free Tier)" and st.session_state.GEMINI_API_KEY)):
-        # Map Gemini option to correct provider for ModelSelector
+        (api_provider == "Google Gemini (Free Tier)" and st.session_state.GEMINI_API_KEY) or
+        (api_provider == "OpenRouter" and st.session_state.OPENROUTER_API_KEY)):
+        # Map provider option to correct provider for ModelSelector
         selector_provider = (
             "replicate" if api_provider == "Premium (Replicate)" else
             "gemini" if api_provider == "Google Gemini (Free Tier)" else
+            "openrouter" if api_provider == "OpenRouter" else
             "groq"
         )
         st.write("api_provider:", api_provider, "selector_provider:", selector_provider)

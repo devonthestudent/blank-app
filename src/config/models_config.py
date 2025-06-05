@@ -166,7 +166,7 @@ SUPPORTED_MODELS = {
     "gemini": {
         "gemini": {
             "gemini/gemini-2.5-flash-preview-05-20": {
-                "name": "Gemini Pro",
+                "name": "Gemini Flash 2.5",
                 "provider": "gemini",
                 "context_length":128000,
                 "is_instruction": True,
@@ -175,12 +175,25 @@ SUPPORTED_MODELS = {
                 "is_production": True
             },
             "gemini/gemini-pro": {
-                "name": "Gemini Pro",
+                "name": "Gemini Pro （Need premium API_key）",
                 "provider": "gemini",
                 "context_length": 128000,
                 "is_instruction": True,
                 "default_temperature": 0.7,
                 "default_max_tokens": 4000,
+                "is_production": True
+            }
+        }
+    },
+        "openrouter": {
+        "deepseek": {
+            "deepseek/deepseek-r1-0528:free": {
+                "name": "deepseek/deepseek-r1-0528",
+                "provider": "deepseek",
+                "context_length":164000,
+                "is_instruction": True,
+                "default_temperature": 0.5,
+                "default_max_tokens": 48000,
                 "is_production": True
             }
         }
