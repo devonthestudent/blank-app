@@ -70,13 +70,25 @@ class APIHandler:
         formatted_messages = self._format_messages(messages, system_prompt)
 
         try:
-            response = completion(
-                model=self.model_name,
-                messages=formatted_messages,
-                temperature=temperature,
-                max_tokens=max_tokens,
-                stream=stream
-            )
+            # Add specific configuration for Replicate
+            if self.provider == "replicate":
+                response = completion(
+                    model=self.model_name,
+                    messages=formatted_messages,
+                    temperature=temperature,
+                    max_tokens=max_tokens,
+                    stream=stream,
+                    max_retries=3,  # Add retries for reliability
+                    timeout=120  # Increase timeout for longer responses
+                )
+            else:
+                response = completion(
+                    model=self.model_name,
+                    messages=formatted_messages,
+                    temperature=temperature,
+                    max_tokens=max_tokens,
+                    stream=stream
+                )
 
             if stream:
                 for chunk in response:
@@ -89,8 +101,22 @@ class APIHandler:
                             content = chunk.choices[0].delta.content
                         elif hasattr(chunk.choices[0], 'text'):
                             content = chunk.choices[0].text
+                        elif hasattr(chunk.choices[0], 'content'):
+                            content = chunk.choices[0].content
+                    elif isinstance(chunk, dict):
+                        if 'choices' in chunk:
+                            if 'delta' in chunk['choices'][0]:
+                                content = chunk['choices'][0]['delta'].get('content', '')
+                            elif 'text' in chunk['choices'][0]:
+                                content = chunk['choices'][0]['text']
+                            elif 'content' in chunk['choices'][0]:
+                                content = chunk['choices'][0]['content']
+                        elif 'content' in chunk:
+                            content = chunk['content']
                     elif isinstance(chunk, str):
                         content = chunk.strip()
+                    elif hasattr(chunk, 'content'):
+                        content = chunk.content
 
                     # If we have any content, yield it
                     if content:

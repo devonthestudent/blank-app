@@ -97,16 +97,18 @@ class ChatInterface:
                     ):
                         # Extract content from different response formats
                         content = None
-                        if isinstance(chunk, dict) and 'choices' in chunk:
-                            if 'delta' in chunk['choices'][0]:
-                                content = chunk['choices'][0]['delta'].get('content', '')
-                            elif 'text' in chunk['choices'][0]:
-                                content = chunk['choices'][0]['text']
-                            elif 'message' in chunk['choices'][0]:
-                                content = chunk['choices'][0]['message'].get('content', '')
-                            # Add support for Replicate's response format
-                            elif 'content' in chunk['choices'][0]:
-                                content = chunk['choices'][0]['content']
+                        if isinstance(chunk, dict):
+                            if 'choices' in chunk:
+                                if 'delta' in chunk['choices'][0]:
+                                    content = chunk['choices'][0]['delta'].get('content', '')
+                                elif 'text' in chunk['choices'][0]:
+                                    content = chunk['choices'][0]['text']
+                                elif 'message' in chunk['choices'][0]:
+                                    content = chunk['choices'][0]['message'].get('content', '')
+                                elif 'content' in chunk['choices'][0]:
+                                    content = chunk['choices'][0]['content']
+                            elif 'content' in chunk:
+                                content = chunk['content']
                         elif isinstance(chunk, str):
                             content = chunk
                         elif hasattr(chunk, 'content'):
