@@ -145,6 +145,7 @@ with st.sidebar:
             if st.secrets.get("GEMINI_API_KEY"):
                 st.success('Using default Gemini API key', icon='✨')
                 st.session_state.GEMINI_API_KEY = st.secrets["GEMINI_API_KEY"]
+                st.write(st.secrets["GEMINI_API_KEY"])
                 os.environ["GEMINI_API_KEY"] = st.session_state.GEMINI_API_KEY
             else:
                 st.error('Default Gemini API key not found in secrets!', icon='💫')
