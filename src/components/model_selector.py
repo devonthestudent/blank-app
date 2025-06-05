@@ -14,9 +14,9 @@ class ModelSelector:
 
         # Special handling for Gemini: no company grouping
         if self.provider == "gemini":
-            # Flatten all gemini models into a single dict
+            # Flatten all gemini models into a single dict, show name and model_id for uniqueness
             self.gemini_models = {
-                model_id: config["name"]
+                model_id: f"{config['name']} ({model_id})"
                 for company, models in SUPPORTED_MODELS.items()
                 for model_id, config in models.items()
                 if config["provider"] == "gemini"
@@ -93,7 +93,7 @@ class ModelSelector:
             "Max Tokens",
             min_value=1,
             max_value=model_config["context_length"],
-            value=model_config.get("default_max_tokens",4000),
+            value=min(model_config.get("default_max_tokens",4000), model_config["context_length"]),
             step=1,
             help="Maximum number of tokens to generate in the response."
         )
