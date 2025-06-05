@@ -3,14 +3,8 @@ from typing import Dict, Any
 from ..config.models_config import SUPPORTED_MODELS
 
 class ModelSelector:
-    def __init__(self, api_provider: str):
-        self.api_provider = api_provider
-        if api_provider == "Premium (Replicate)":
-            self.provider = "replicate"
-        elif api_provider == "Google Gemini (Free Tier)":
-            self.provider = "gemini"
-        else:
-            self.provider = "groq"
+    def __init__(self, provider: str):
+        self.provider = provider
 
         # Special handling for Gemini: no company grouping
         if self.provider == "gemini":
