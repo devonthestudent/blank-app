@@ -5,47 +5,72 @@ from ..config.models_config import SUPPORTED_MODELS
 class ModelSelector:
     def __init__(self, api_provider: str):
         self.api_provider = api_provider
-        self.provider = "replicate" if api_provider == "Premium (Replicate)" else "groq"
-        
-        # Filter companies based on provider
-        self.companies = [
-            company for company, models in SUPPORTED_MODELS.items()
-            if any(model["provider"] == self.provider for model in models.values())
-        ]
-        
-        # Filter models by provider
-        self.models_by_company = {
-            company: {
+        if api_provider == "Premium (Replicate)":
+            self.provider = "replicate"
+        elif api_provider == "Google Gemini (Free Tier)":
+            self.provider = "gemini"
+        else:
+            self.provider = "groq"
+
+        # Special handling for Gemini: no company grouping
+        if self.provider == "gemini":
+            # Flatten all gemini models into a single dict
+            self.gemini_models = {
                 model_id: config["name"]
+                for company, models in SUPPORTED_MODELS.items()
                 for model_id, config in models.items()
-                if config["provider"] == self.provider
+                if config["provider"] == "gemini"
             }
-            for company, models in SUPPORTED_MODELS.items()
-            if any(model["provider"] == self.provider for model in models.values())
-        }
+        else:
+            # Filter companies based on provider
+            self.companies = [
+                company for company, models in SUPPORTED_MODELS.items()
+                if any(model["provider"] == self.provider for model in models.values())
+            ]
+            # Filter models by provider
+            self.models_by_company = {
+                company: {
+                    model_id: config["name"]
+                    for model_id, config in models.items()
+                    if config["provider"] == self.provider
+                }
+                for company, models in SUPPORTED_MODELS.items()
+                if any(model["provider"] == self.provider for model in models.values())
+            }
 
     def render(self) -> Dict[str, Any]:
         """Render the model selection interface and return the selected model configuration."""
         st.sidebar.subheader("Model Selection")
-        
-        # Company selection
-        selected_company = st.sidebar.selectbox(
-            "Select Company",
-            self.companies,
-            format_func=lambda x: x.capitalize(),
-            help="Select the AI company whose models you want to use"
-        )
-
-        # Model selection based on company
-        selected_model_id = st.sidebar.selectbox(
-            "Select Model",
-            list(self.models_by_company[selected_company].keys()),
-            format_func=lambda x: self.models_by_company[selected_company][x],
-            help=f"Select a specific model from {selected_company.capitalize()}"
-        )
-
-        # Get model configuration
-        model_config = SUPPORTED_MODELS[selected_company][selected_model_id]
+        if self.provider == "gemini":
+            selected_model_id = st.sidebar.selectbox(
+                "Select Gemini Model",
+                list(self.gemini_models.keys()),
+                format_func=lambda x: self.gemini_models[x],
+                help="Select a Gemini model"
+            )
+            # Find the config for the selected model
+            model_config = None
+            for company, models in SUPPORTED_MODELS.items():
+                if selected_model_id in models:
+                    model_config = models[selected_model_id]
+                    break
+        else:
+            # Company selection
+            selected_company = st.sidebar.selectbox(
+                "Select Company",
+                self.companies,
+                format_func=lambda x: x.capitalize(),
+                help="Select the AI company whose models you want to use"
+            )
+            # Model selection based on company
+            selected_model_id = st.sidebar.selectbox(
+                "Select Model",
+                list(self.models_by_company[selected_company].keys()),
+                format_func=lambda x: self.models_by_company[selected_company][x],
+                help=f"Select a specific model from {selected_company.capitalize()}"
+            )
+            # Get model configuration
+            model_config = SUPPORTED_MODELS[selected_company][selected_model_id]
 
         # Display model information
         st.sidebar.markdown(f"""
@@ -56,7 +81,6 @@ class ModelSelector:
 
         # Model parameters
         st.sidebar.subheader("Model Parameters")
-        
         temperature = st.sidebar.slider(
             "Temperature",
             min_value=0.0,
@@ -65,7 +89,6 @@ class ModelSelector:
             step=0.1,
             help="Higher values make the output more random, lower values make it more deterministic."
         )
-
         max_tokens = st.sidebar.slider(
             "Max Tokens",
             min_value=1,
@@ -74,7 +97,6 @@ class ModelSelector:
             step=1,
             help="Maximum number of tokens to generate in the response."
         )
-
         # System prompt
         st.sidebar.subheader("System Prompt")
         system_prompt = st.sidebar.text_area(
@@ -83,14 +105,12 @@ class ModelSelector:
             height=100,
             help="Optional system prompt to guide the model's behavior. Leave empty to use default."
         )
-
         # Add a note about preview models
         if model_config["provider"] == "groq":
             st.sidebar.warning(
                 "Note: These are preview models intended for evaluation purposes only. "
                 "They may be discontinued at short notice."
             )
-
         return {
             "model_name": selected_model_id,
             "provider": model_config["provider"],
