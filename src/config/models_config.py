@@ -185,12 +185,12 @@ SUPPORTED_MODELS = {
             }
         }
     },
-        "openrouter": {
+    "openrouter": {
         "deepseek": {
             "deepseek/deepseek-r1-0528:free": {
                 "name": "deepseek/deepseek-r1-0528",
                 "provider": "deepseek",
-                "context_length":164000,
+                "context_length": 164000,
                 "is_instruction": True,
                 "default_temperature": 0.5,
                 "default_max_tokens": 48000,
